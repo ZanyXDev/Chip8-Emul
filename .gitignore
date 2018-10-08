@@ -1,0 +1,6 @@
+build
+ui
+Makefile
+*.pro.user
+Doxyfile
+
