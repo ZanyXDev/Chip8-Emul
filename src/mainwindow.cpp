@@ -12,10 +12,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     // Move app window to center desktop
     this->move(calcDeskTopCenter(this->width(),this->height()));
 
+    m_emul = new Chip8Emu();
 
     createActions();
     createGUI();
     createStatusBar();
+    createConnection();
 }
 
 // -------------------------------------- PUBLIC SLOTS ---------------------------------------
@@ -50,12 +52,24 @@ void MainWindow::fileOpen()
     }
 
     emit fileLoaded( tmp );
+    gameSelector->addItem(fileName);
+}
+
+void MainWindow::readyToWork(bool flag)
+{
+    newGameAct->setEnabled( flag );
+    startGameBtn->setEnabled( flag );
+    nextStepBtn->setEnabled( flag );
 }
 
 // -------------------------------------------------------------------------------------------
 void MainWindow::createActions()
 {    
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    QAction *fileLoadAct = fileMenu->addAction(tr("&Load ROM"), this, &MainWindow::fileOpen);
+    fileLoadAct->setShortcuts(QKeySequence::Open);
+    fileLoadAct->setStatusTip(tr("Load ROM from file..."));
+
     fileMenu->addSeparator();
 
     QAction *quitAct = fileMenu->addAction(tr("&Quit"), this, &QWidget::close);
@@ -64,10 +78,10 @@ void MainWindow::createActions()
 
     menuBar()->addSeparator();
     QMenu *gameMenu = menuBar()->addMenu(tr("&Game"));
-    newGameAct = new QAction(tr("&Start game"),this);
 
+    newGameAct = new QAction(tr("&Start game"),this);
     newGameAct->setStatusTip(tr("Start new game"));
-    connect(newGameAct, &QAction::triggered, this, &MainWindow::startGame);
+    newGameAct->setEnabled( false );
     gameMenu->addAction(newGameAct);
     menuBar()->addSeparator();
 
@@ -76,6 +90,7 @@ void MainWindow::createActions()
     //aboutAct->setStatusTip(tr("Show the application's About box"));
     QAction *aboutQtAct = helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
     aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
+
 }
 
 void MainWindow::createStatusBar()
@@ -99,10 +114,11 @@ void MainWindow::createGUI()
     cmdLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Expanding));
 
     startGameBtn = new QPushButton("&Start");
-    connect(startGameBtn,&QPushButton::clicked,this,&MainWindow::startGame);
+    startGameBtn->setEnabled( false);
     cmdLayout->addWidget(startGameBtn);
 
     nextStepBtn = new QPushButton("&Next step");
+    nextStepBtn->setEnabled( false );
 
     cmdLayout->addWidget(nextStepBtn);
 
@@ -149,6 +165,15 @@ void MainWindow::createGUI()
     //    frameLayout->addLayout(cpuLayout);
     frameLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Expanding));
     setCentralWidget(frame);
+}
+
+void MainWindow::createConnection()
+{
+    connect(newGameAct, &QAction::triggered, this, &MainWindow::startGame);
+    connect(startGameBtn,&QPushButton::clicked,this,&MainWindow::startGame);
+
+    connect(this,&MainWindow::fileLoaded,m_emul,&Chip8Emu::loadData2Memory);
+    connect(m_emul,&Chip8Emu::ReadyToWork,this,&MainWindow::readyToWork);
 }
 
 QPoint MainWindow::calcDeskTopCenter(int width,int height)

@@ -27,6 +27,7 @@
 #include <QByteArray>
 
 #include "screen.h"
+#include "chip8emu.h"
 
 
 class MainWindow : public QMainWindow
@@ -43,11 +44,15 @@ signals:
 public slots:
     void startGame();
     void fileOpen();
+    void readyToWork(bool flag);
 
 private:
     void createActions();
     void createStatusBar();
     void createGUI();
+    void createConnection();
+
+    bool workMode;
     QPoint calcDeskTopCenter(int width,int height);
 
     QAction* newGameAct;
@@ -76,6 +81,8 @@ private:
     QLabel* Vd_label;
     QLabel* Ve_label;
     QLabel* Vf_label;
+
+    Chip8Emu *m_emul;
 };
 
 #endif // MAINWINDOW_H
