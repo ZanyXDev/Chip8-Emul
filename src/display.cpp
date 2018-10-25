@@ -1,54 +1,67 @@
 #include "display.h"
 #include <QPainter>
-#include <QBrush>
 #include <QDebug>
+#include <QImage>
+#include <QRect>
 
-Display::Display(QWidget *parent) : QWidget(parent)
-{
-    bgColor = Qt::black;
-    fgColor = Qt::white;
+Display::Display(QWidget *parent)
+    : QWidget (parent)
+{   
+    antialiased = false;
+    setBackgroundRole(QPalette::Base);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    m_screenImage = new QImage(128,64,QImage::Format_Grayscale8);
+    this->debugDraw();
 }
 
-void Display::updateDisplay(QVector <unsigned char> screen)
+
+void Display::setAntialiased(bool antialiased)
 {
-
-    QPainter painter(m_screenImage);
-    painter.setRenderHint(QPainter::Qt4CompatiblePainting, true);
-    //painter.scale ( resolution, resolution );
-    QBrush brush(bgColor, Qt::SolidPattern);
-    // TODO fix magic number
-    painter.fillRect(0, 0, 128, 64, brush);
-    painter.setPen(fgColor);
-    painter.setBrush(fgColor);
-
-    for (int y = 0; y < 64; y++){
-        for (int x = 0; x < 128; x++){
-            qDebug() << "y=" << y << " x=" << x;
-            if ( screen.at(getIndex(x,y)) == 1)
-            {
-                //if (resolution > 1)
-                //    painter.drawRect ( x, y, 1, 1 );
-                //else painter.drawPoint(x, y);
-
-                painter.drawPoint(x,y);
-            }
-        }
-    }
-    this->update();
+    this->antialiased = antialiased;
+    update();
 }
 
-void Display::paintEvent(QPaintEvent *)
+void Display::paintEvent(QPaintEvent *event)
 {
+    QRect  m_rect = event->rect();
     QPainter painter(this);
-    painter.scale(4,4);
-    painter.drawImage(0,0,*m_screenImage);
+    painter.setRenderHint(QPainter::Antialiasing, antialiased);
+    painter.fillRect(m_rect, QBrush(Qt::gray));
+    int size_x = m_rect.width() / 64;
+    int size_y = m_rect.height() / 32;
+
+    painter.setPen(Qt::green);
+    painter.setBrush(Qt::SolidPattern);
+    painter.drawRect(0, 0, size_x, size_y);
 }
 
-int Display::getIndex(int x, int y)
+void Display::resizeEvent(QResizeEvent *event)
 {
-   // qDebug() << " index=" << x+(y*64);
-    // TODO fix magic number
-     return x+(y*64);
+    /*
+    if (width() > m_screenImage.width() || height() > m_screenImage.height()) {
+        int newWidth = qMax(width() + 128, m_screenImage.width());
+        int newHeight = qMax(height() + 128, m_screenImage.height());
+        resizeImage(&m_screenImage, QSize(newWidth, newHeight));
+        update();
+    }
+    */
+    QWidget::resizeEvent(event);
 }
+
+void Display::debugDraw()
+{
+    update();
+}
+
+
+
+QSize Display::minimumSizeHint() const
+{
+    return QSize(64, 32);
+}
+
+QSize Display::sizeHint() const
+{
+    return QSize(320, 160);
+}
+

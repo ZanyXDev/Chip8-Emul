@@ -20,14 +20,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #RESOURCES     = chip8-qt5.qrc
 
 HEADERS += \
-    src/mainwindow.h  \
-    src/display.h \  
+    src/mainwindow.h  \ 
     src/screen.h
 
 SOURCES = \
     src/main.cpp \
     src/mainwindow.cpp \
-    src/display.cpp \
     src/screen.cpp
 
 CONFIG += console

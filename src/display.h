@@ -9,20 +9,25 @@ class Display : public QWidget
     Q_OBJECT
 public:
     explicit Display(QWidget *parent = nullptr);
-    void updateDisplay(QVector <unsigned char> screen);
 
+    QSize minimumSizeHint() const override;
+    QSize sizeHint() const override;
+    void setAntialiased(bool antialiased);
 signals:
 
 public slots:
 
 protected:
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
-    int getIndex(int x,int y);
-    QImage* m_screenImage;
+    void debugDraw();
+
+    QImage m_screenImage;
     QColor bgColor;
     QColor fgColor;
+    bool antialiased;
 };
 
 #endif // DISPLAY_H

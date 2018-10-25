@@ -18,19 +18,21 @@
 
 #include <QtWidgets/QApplication>
 #include "mainwindow.h"
+#include "display.h"
 
-
-#define  VERSION "0.0.1"
+#define  VERSION "0.0.5"
 
 int main(int argc, char *argv[])
 {
-	QApplication app(argc, argv);
+    QApplication app(argc, argv);
 
-	app.setApplicationName("chip8-qt5");
-	app.setApplicationVersion(VERSION);
+    app.setApplicationName("chip8-qt5");
+    app.setApplicationVersion(VERSION);
 
- 	MainWindow mainWin;
-	mainWin.setWindowTitle(app.applicationName() + " " + app.applicationVersion());
-	mainWin.show();
-	return app.exec();
+    MainWindow mainWin;
+    mainWin.setWindowTitle(app.applicationName() + " " + app.applicationVersion());
+    mainWin.show();
+
+
+    return app.exec();
 }
