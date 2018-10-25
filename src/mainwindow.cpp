@@ -14,10 +14,45 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
 
     createActions();
-    createGUI();    
+    createGUI();
     createStatusBar();
 }
 
+// -------------------------------------- PUBLIC SLOTS ---------------------------------------
+void MainWindow::startGame()
+{
+    this->move(5,5);
+}
+
+void MainWindow::fileOpen()
+{
+    QString selectedFilter;
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Select chip-8 game file"),
+                                                    "",
+                                                    tr("Chip-8 game files (*.ch8)"),
+                                                    &selectedFilter);
+    if (fileName.isEmpty()) {
+        return;
+    }
+
+    QFile file(fileName);
+    QByteArray tmp;
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        return;
+    }
+
+    tmp = file.readAll();
+
+    if (tmp.isEmpty()){
+        return;
+    }
+
+    emit fileLoaded( tmp );
+}
+
+// -------------------------------------------------------------------------------------------
 void MainWindow::createActions()
 {    
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -28,15 +63,19 @@ void MainWindow::createActions()
     quitAct->setStatusTip(tr("Quit the application"));
 
     menuBar()->addSeparator();
+    QMenu *gameMenu = menuBar()->addMenu(tr("&Game"));
+    newGameAct = new QAction(tr("&Start game"),this);
+
+    newGameAct->setStatusTip(tr("Start new game"));
+    connect(newGameAct, &QAction::triggered, this, &MainWindow::startGame);
+    gameMenu->addAction(newGameAct);
+    menuBar()->addSeparator();
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
-
     //QAction *aboutAct = helpMenu->addAction(tr("&About"), this, &MainWindow::about);
     //aboutAct->setStatusTip(tr("Show the application's About box"));
-
     QAction *aboutQtAct = helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
     aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
-
 }
 
 void MainWindow::createStatusBar()
@@ -60,10 +99,11 @@ void MainWindow::createGUI()
     cmdLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Expanding));
 
     startGameBtn = new QPushButton("&Start");
+    connect(startGameBtn,&QPushButton::clicked,this,&MainWindow::startGame);
     cmdLayout->addWidget(startGameBtn);
 
     nextStepBtn = new QPushButton("&Next step");
-    nextStepBtn->addAction();
+
     cmdLayout->addWidget(nextStepBtn);
 
     QHBoxLayout *mainLayout = new QHBoxLayout();
@@ -106,7 +146,7 @@ void MainWindow::createGUI()
     frameLayout->addLayout(cmdLayout);
     frameLayout->addLayout(mainLayout);
     frameLayout->addLayout(countersLayout);
-//    frameLayout->addLayout(cpuLayout);
+    //    frameLayout->addLayout(cpuLayout);
     frameLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Expanding));
     setCentralWidget(frame);
 }

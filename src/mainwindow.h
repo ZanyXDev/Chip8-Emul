@@ -23,7 +23,8 @@
 #include <QHBoxLayout>
 #include <QGridLayout>
 
-#include <QScreen>
+#include <QFileDialog>
+#include <QByteArray>
 
 #include "screen.h"
 
@@ -37,8 +38,11 @@ public:
 signals:
     void startEmulation();
     void stopEmulation();
+    void fileLoaded(QByteArray &data);
 
 public slots:
+    void startGame();
+    void fileOpen();
 
 private:
     void createActions();
@@ -46,6 +50,7 @@ private:
     void createGUI();
     QPoint calcDeskTopCenter(int width,int height);
 
+    QAction* newGameAct;
     QRect desktopRect;
 
     QComboBox* gameSelector;
