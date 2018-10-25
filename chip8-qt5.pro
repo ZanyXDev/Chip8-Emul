@@ -1,4 +1,4 @@
-QT += gui core
+QT += gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -21,13 +21,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 HEADERS += \
     src/mainwindow.h  \
-    src/display.h  
+    src/display.h \  
+    src/screen.h
 
-SOURCES = 
+SOURCES = \
     src/main.cpp \
     src/mainwindow.cpp \
-    src/display.cpp
+    src/display.cpp \
+    src/screen.cpp
 
 CONFIG += console
+
 
 
