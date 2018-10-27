@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 // -------------------------------------- PUBLIC SLOTS ---------------------------------------
 void MainWindow::startGame()
 {
-    this->move(5,5);
+
 }
 
 void MainWindow::fileOpen()
@@ -60,6 +60,7 @@ void MainWindow::readyToWork(bool flag)
     newGameAct->setEnabled( flag );
     startGameBtn->setEnabled( flag );
     nextStepBtn->setEnabled( flag );
+    stopGameBtn->setEnabled( flag );
 }
 
 // -------------------------------------------------------------------------------------------
@@ -119,12 +120,15 @@ void MainWindow::createGUI()
 
     nextStepBtn = new QPushButton("&Next step");
     nextStepBtn->setEnabled( false );
-
     cmdLayout->addWidget(nextStepBtn);
+
+    stopGameBtn = new QPushButton("&Stop");
+    stopGameBtn->setEnabled( false );
+    cmdLayout->addWidget(stopGameBtn);
 
     QHBoxLayout *mainLayout = new QHBoxLayout();
 
-    Screen* m_screen = new Screen();
+    m_screen = new Screen();
     mainLayout->addWidget(m_screen);
 
     QTextEdit* textListing = new QTextEdit();
@@ -170,10 +174,12 @@ void MainWindow::createGUI()
 void MainWindow::createConnection()
 {
     connect(newGameAct, &QAction::triggered, this, &MainWindow::startGame);
-    connect(startGameBtn,&QPushButton::clicked,this,&MainWindow::startGame);
+    connect(startGameBtn,&QPushButton::clicked,m_emul,&Chip8Emu::startEmulation);
+    connect(stopGameBtn,&QPushButton::clicked,m_emul,&Chip8Emu::stopEmulation);
 
     connect(this,&MainWindow::fileLoaded,m_emul,&Chip8Emu::loadData2Memory);
     connect(m_emul,&Chip8Emu::ReadyToWork,this,&MainWindow::readyToWork);
+    connect(m_emul,&Chip8Emu::updateScreen,m_screen,&Screen::updateScreen);
 }
 
 QPoint MainWindow::calcDeskTopCenter(int width,int height)

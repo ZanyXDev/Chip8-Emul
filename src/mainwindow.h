@@ -61,6 +61,7 @@ private:
     QComboBox* gameSelector;
     QPushButton* startGameBtn;
     QPushButton* nextStepBtn;
+    QPushButton* stopGameBtn;
 
     QLabel* PC_label;
     QLabel* I_label;
@@ -83,6 +84,7 @@ private:
     QLabel* Vf_label;
 
     Chip8Emu *m_emul;
+    Screen* m_screen;
 };
 
 #endif // MAINWINDOW_H
