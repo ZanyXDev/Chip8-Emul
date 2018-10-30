@@ -22,13 +22,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 HEADERS += \
     src/mainwindow.h  \ 
     src/screen.h \
-    src/chip8emu.h
+    src/chip8emu.h \
+    src/cputhread.h
 
 SOURCES = \
     src/main.cpp \
     src/mainwindow.cpp \
     src/screen.cpp \
-    src/chip8emu.cpp
+    src/chip8emu.cpp \
+    src/cputhread.cpp
 
 CONFIG += console
 
