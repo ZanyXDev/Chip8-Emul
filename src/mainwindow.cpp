@@ -12,12 +12,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     // Move app window to center desktop
     this->move(calcDeskTopCenter(this->width(),this->height()));
 
-    m_emul = new Chip8Emu();
-
     createActions();
     createGUI();
     createStatusBar();
     createConnection();
+}
+
+MainWindow::~MainWindow()
+{
+
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    this->onStopClicked();
+    QMainWindow::closeEvent(event);
 }
 
 // -------------------------------------- PUBLIC SLOTS ---------------------------------------
@@ -51,7 +60,8 @@ void MainWindow::fileOpen()
         return;
     }
 
-    emit fileLoaded( tmp );
+    m_emul.setMemory( tmp );
+    this->readyToWork( true );
     gameSelector->addItem(fileName);
 }
 
@@ -61,6 +71,22 @@ void MainWindow::readyToWork(bool flag)
     startGameBtn->setEnabled( flag );
     nextStepBtn->setEnabled( flag );
     stopGameBtn->setEnabled( flag );
+}
+
+void MainWindow::onStartClicked()
+{
+    this->statusBar()->showMessage(tr("Start CPU emulation"));
+    // Запуск потока
+    m_emul.setRunning(true);
+    cpuThread.start();
+}
+
+void MainWindow::onStopClicked()
+{
+    this->statusBar()->showMessage(tr("Stop CPU emulation"),2000);
+    this->readyToWork( false );
+    // Остановка потока через завершение выполнения методов run в объектах
+    m_emul.setRunning(false);
 }
 
 // -------------------------------------------------------------------------------------------
@@ -174,12 +200,17 @@ void MainWindow::createGUI()
 void MainWindow::createConnection()
 {
     connect(newGameAct, &QAction::triggered, this, &MainWindow::startGame);
-    connect(startGameBtn,&QPushButton::clicked,m_emul,&Chip8Emu::startEmulation);
-    connect(stopGameBtn,&QPushButton::clicked,m_emul,&Chip8Emu::stopEmulation);
+    connect(startGameBtn,&QPushButton::clicked,this,&MainWindow::onStartClicked);
+    connect(stopGameBtn,&QPushButton::clicked,this,&MainWindow::onStopClicked);
 
-    connect(this,&MainWindow::fileLoaded,m_emul,&Chip8Emu::loadData2Memory);
-    connect(m_emul,&Chip8Emu::ReadyToWork,this,&MainWindow::readyToWork);
-    connect(m_emul,&Chip8Emu::updateScreen,m_screen,&Screen::updateScreen);
+    // Запуск выполнения метода run будет осуществляться по сигналу запуска от соответствующего потока
+    connect(&cpuThread, &QThread::started, &m_emul, &CPUThread::run);
+
+    // Остановка потока же будет выполняться по сигналу finished от соответствующего объекта в потоке
+    connect(&m_emul, &CPUThread::finished, &cpuThread, &QThread::terminate);
+    connect(&m_emul, &CPUThread::screenChanged,m_screen,&Screen::updateScreen);
+
+    m_emul.moveToThread(&cpuThread);    // Передаём объекты в соответствующие потоки
 }
 
 QPoint MainWindow::calcDeskTopCenter(int width,int height)

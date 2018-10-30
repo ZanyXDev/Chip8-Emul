@@ -25,35 +25,45 @@
 
 #include <QFileDialog>
 #include <QByteArray>
+#include <QThread>
 
 #include "screen.h"
-#include "chip8emu.h"
-
+//#include "chip8emu.h"
+#include "cputhread.h"
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-
+    ~MainWindow();
 signals:
     void startEmulation();
-    void stopEmulation();
-    void fileLoaded(QByteArray &data);
+    void stopEmulation();    
 
 public slots:
     void startGame();
     void fileOpen();
     void readyToWork(bool flag);
 
+private slots:
+    void onStartClicked();    // Слот для запуска потоков
+    void onStopClicked();     // Слот для остановки потоков
+
+protected:
+    void closeEvent(QCloseEvent *event);
+
 private:
+    QPoint calcDeskTopCenter(int width,int height);
     void createActions();
     void createStatusBar();
     void createGUI();
     void createConnection();
 
     bool workMode;
-    QPoint calcDeskTopCenter(int width,int height);
+
+    CPUThread m_emul;
+    QThread cpuThread;   // CPU emulator поток
 
     QAction* newGameAct;
     QRect desktopRect;
@@ -83,7 +93,7 @@ private:
     QLabel* Ve_label;
     QLabel* Vf_label;
 
-    Chip8Emu *m_emul;
+    //Chip8Emu *m_emul;
     Screen* m_screen;
 };
 
