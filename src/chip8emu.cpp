@@ -98,13 +98,25 @@ void Chip8Emu::executeNextOpcode()
             break;
         case 0x3: // 3xkk SE Vx, kk Пропустить следующую инструкцию, если регистр Vx = kk
             asmTextString.append(QString("SE V%1, 0x%2 \t ; Skip next instruction if V%1 = 0x%2").arg( X, 0, 16 ).arg( KK,0,16 ));
+            if ( getRegister( X ) == KK)
+            {
+                PC+=2;
+            }
             break;
         case 0x4: // 4xkk SNE Vx, kk Пропустить следующую инструкцию, если регистр Vx != kk
             asmTextString.append(QString("SNE V%1, 0x%2 \t ; Skip next instruction if V%1 != 0x%2").arg( X, 0, 16 ).arg( KK, 0, 16 ));
+            if ( getRegister( X ) != KK)
+            {
+                PC+=2;
+            }
             break;
         case 0x5: // 5xy0 SE Vx, Vy Пропустить следующую инструкцию, если Vx = Vy
             if ( LO == 0x0){
                 asmTextString.append(QString("SE V%1, V%2 \t ; Skip next instruction if V%1 = V%2").arg( X,0,16 ).arg( Y,0,16 ));
+                if ( getRegister( X ) == getRegister( Y ))
+                {
+                    PC+=2;
+                }
             }else {
                 asmTextString.append( QString("opCode 0x%1 is invalid").arg( opCode, 0, 16 ));
             }
@@ -115,27 +127,33 @@ void Chip8Emu::executeNextOpcode()
             break;
         case 0x7: // 7xkk ADD Vx, kk Установить Vx = Vx + kk
             asmTextString.append(QString("ADD V%1, 0x%2 \t ; V%1 = V%1 + 0x%2").arg( X,0,16 ).arg( KK, 0, 16 ));
+            setRegister( X, getRegister( X ) + KK );
             break;
         case 0x8:
             switch ( LO ){
             case 0x0: // 8xy0 LD Vx, Vy Установить Vx = Vy
                 asmTextString.append(QString("LD V%1, V%2 \t ; Set register V%1 = V%2").arg( X,0,16 ).arg( Y, 0, 16 ));
+                setRegister( X, getRegister( Y ) );
                 break;
             case 0x1: // 8xy1 OR Vx, Vy Выполнить операцию дизъюнкция (логическое “ИЛИ”) над значениями регистров Vx и Vy,
                 // результат сохранить в Vx. Т.е. Vx = Vx | Vy
                 asmTextString.append(QString("OR V%1, V%2 \t ; Set register V%1 = V%1 | V%2").arg( X,0,16 ).arg( Y, 0, 16 ));
+                setRegister( X, ( getRegister( X ) | getRegister( Y ) ) );
                 break;
             case 0x2: // 8xy2 AND Vx, Vy Выполнить операцию конъюнкция (логическое “И”) над значениями регистров Vx и Vy,
                 // результат сохранить в Vx. Т.е. Vx = Vx & Vy
                 asmTextString.append(QString("OR V%1, V%2 \t ; Set register V%1 = V%1 & V%2").arg( X,0,16 ).arg( Y, 0, 16 ));
+                setRegister( X, ( getRegister( X ) & getRegister( Y ) ) );
                 break;
             case 0x3: // 8xy3 XOR Vx, Vy Выполнить операцию “исключающее ИЛИ” над значениями регистров Vx и Vy,
                 // результат сохранить в Vx. Т.е. Vx = Vx ^ Vy
                 asmTextString.append(QString("XOR V%1, V%2 \t ; Set register V%1 = V%1 ^ V%2").arg( X,0,16 ).arg( Y, 0, 16 ));
+                setRegister( X, ( getRegister( X ) ^ getRegister( Y ) ) );
                 break;
             case 0x4: // 8xy4 ADD Vx, Vy Значения Vx и Vy суммируются. Если результат больше, чем 8 бит (т.е.> 255)
                 // VF устанавливается в 1, иначе 0. Только младшие 8 бит результата сохраняются в Vx. Т.е. Vx = Vx + Vy
                 asmTextString.append(QString("ADD V%1, V%2 \t ; Set register V%1 = V%1 + V%2").arg( X,0,16 ).arg( Y, 0, 16 ));
+
                 break;
             case 0x5: // 8xy5 SUB Vx, Vy Если Vx >= Vy, то VF устанавливается в 1, иначе 0. Затем Vy вычитается из Vx,
                 // а результат сохраняется в Vx. Т.е. Vx = Vx - Vy
@@ -160,6 +178,10 @@ void Chip8Emu::executeNextOpcode()
         case 0x9: // 9xy0 SNE Vx, Vy Пропустить следующую инструкцию, если Vx != Vy
             if ( LO == 0x0) {
                 asmTextString.append(QString("SNE V%1, V%2 \t ; Skip next instruction if V%1 != V%2").arg( X,0,16 ).arg( Y, 0, 16));
+                if (getRegister( X) != getRegister( Y ))
+                {
+                    PC+=2;
+                }
             }else {
                 asmTextString.append( QString("opCode 0x%1 is invalid").arg( opCode, 0, 16 ));
             }
@@ -172,6 +194,7 @@ void Chip8Emu::executeNextOpcode()
             break;
         case 0xC: //Cxkk RND Vx, kk Устанавливается Vx = (случайное число от 0 до 255) & kk
             asmTextString.append(QString("RND V%1, 0x%2 \t ; Set register V%1 = random {0,255} & 0x%2 ").arg( X,0,16 ).arg( KK,0,16 ));
+            setRegister(X, QRandomGenerator::global()->bounded( 255 ));
             break;
         case 0xD: /** Dxyn DRW Vx, Vy, n Нарисовать на экране спрайт. Эта инструкция считывает n байт по адресу
                     * содержащемуся в регистре I и рисует их на экране в виде спрайта c координатой Vx, Vy.
@@ -187,15 +210,24 @@ void Chip8Emu::executeNextOpcode()
         case 0xE:
             if ( KK == 0x9E){ // Ex9E SKP Vx Пропустить следующую команду если клавиша, номер которой хранится в регистре Vx, нажата
                 asmTextString.append(QString("SKP V%1 \t ; Skip next instruction if key number (save register V%1) pressed ").arg( X,0,16 ) );
+                if (m_keys.at( getRegister( X ) ))
+                {
+                    PC+=2;
+                }
             }
             if ( KK == 0xA1){ // ExA1 SKNP Vx Пропустить следующую команду если клавиша, номер которой хранится в регистре Vx, не нажата
                 asmTextString.append(QString("SKNP V%1 \t ; Skip next instruction if key number (save register V%1) not pressed ").arg( X,0,16 ) );
+                if (! m_keys.at( getRegister( X ) ))
+                {
+                    PC+=2;
+                }
             }
             break;
         case 0xF:
             switch ( KK ) {
             case 0x07:// Fx07 LD Vx, DT Скопировать значение таймера задержки в регистр Vx
                 asmTextString.append(QString("LD V%1, DT \t ; Set register V%1 = DATA_TIMER ").arg( X,0,16 ) );
+                setRegister(X, delay_timer);
                 break;
             case 0x0A:
                 /**
@@ -208,9 +240,11 @@ void Chip8Emu::executeNextOpcode()
                 break;
             case 0x15: // Fx15 LD DT, Vx Установить значение таймера задержки равным значению регистра Vx
                 asmTextString.append(QString("LD DT, V%1 \t ; Set register DATA_TIMER = V%1 ").arg( X,0,16 ) );
+                delay_timer = getRegister( X );
                 break;
             case 0x18:// Fx18 LD ST, Vx Установить значение звукового таймера равным значению регистра Vx
                 asmTextString.append(QString("LD ST, V%1 \t ; Set register SOUND_TIMER = V%1 ").arg( X,0,16 ) );
+                sound_timer = getRegister( X );
                 break;
             case 0x1E: // Fx1E ADD I, Vx Сложить значения регистров I и Vx, результат сохранить в I. Т.е. I = I + Vx
                 asmTextString.append(QString("ADD I, V%1 \t ; Set register I = I + V%1 ").arg( X,0,16 ) );
@@ -376,17 +410,15 @@ void Chip8Emu::initDevice()
     currentRegister = 0;
 }
 
-
-
 void Chip8Emu::changeKeyState(int key, bool state)
 {
-     m_keys.setBit(key, state);
+    m_keys.setBit(key, state);
 
-     if (waitKeyPressed)
-     {
-         setRegister(currentRegister, key);
-         waitKeyPressed = false;
-     }
+    if (waitKeyPressed)
+    {
+        setRegister(currentRegister, key);
+        waitKeyPressed = false;
+    }
 }
 
 void Chip8Emu::execute()
