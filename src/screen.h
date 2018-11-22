@@ -4,9 +4,11 @@
 #include <QWidget>
 #include <QBitArray>
 #include <QColor>
+#include <QPainter>
+#include <QBitArray>
 
-#define DISPLAY_X 64
-#define DISPLAY_Y 32
+#include "mydefs.h"
+
 
 class Screen : public QWidget
 {

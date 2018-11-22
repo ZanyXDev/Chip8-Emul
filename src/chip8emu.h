@@ -9,12 +9,8 @@
 #include <QBitArray>
 #include <QRandomGenerator>
 
-#define RAM_SIZE 4096
-#define START_ADDR 0x200
-#define DISPLAY_X 64
-#define DISPLAY_Y 32
+#include "mydefs.h"
 
-#define DEBUG 1
 class Chip8Emu : public QObject
 {
     Q_OBJECT

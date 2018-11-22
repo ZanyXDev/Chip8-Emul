@@ -28,6 +28,7 @@
 
 #include "screen.h"
 #include "chip8emu.h"
+#include "mydefs.h"
 
 
 class MainWindow : public QMainWindow
@@ -45,6 +46,9 @@ public slots:
     void startGame();
     void fileOpen();
     void readyToWork(bool flag);
+
+protected:
+    void keyPressEvent(QKeyEvent *event);
 
 private:
     void createActions();

@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 
-#define DEBUG 1
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -191,5 +190,15 @@ QPoint MainWindow::calcDeskTopCenter(int width,int height)
     centerWindow.setY(centerWindow.y() - (height / 2) );
     return centerWindow;
 }
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if ( m_emul != nullptr )
+    {
+        //m_emul->pressedKey(event->key());
+    }
+    QMainWindow::keyPressEvent(event);
+}
+
 
 
