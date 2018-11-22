@@ -26,6 +26,8 @@ signals:
     void ReadyToWork( bool flag);
     void updateScreen( QBitArray screen );
     void finishExecute();
+    void showDecodeOpCode( const QString &asm_txt );
+
 #ifdef DEBUG
     void showTime(const QString &m_time);
 #endif
