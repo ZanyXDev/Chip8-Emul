@@ -1,6 +1,3 @@
-#include <QPainter>
-#include <QBitArray>
-
 #include "screen.h"
 
 
@@ -55,9 +52,9 @@ void Screen::paintEvent(QPaintEvent *event)
     }
     for (int x = 0; x < DISPLAY_X; ++x) {
         for (int y = 0; y < DISPLAY_Y; ++y)
-          drawImagePixel(&painter, x, y);
-      }
+            drawImagePixel(&painter, x, y);
     }
+}
 
 void Screen::drawImagePixel(QPainter *painter, int x, int y)
 {
@@ -71,10 +68,10 @@ void Screen::drawImagePixel(QPainter *painter, int x, int y)
     }
 
     if (zoom >= 3) {
-      painter->fillRect(zoom * x + 1, zoom * y + 1,
-                        zoom - 1, zoom - 1, color);
+        painter->fillRect(zoom * x + 1, zoom * y + 1,
+                          zoom - 1, zoom - 1, color);
     } else {
-      painter->fillRect(zoom * x, zoom * y,
-                        zoom, zoom, color);
+        painter->fillRect(zoom * x, zoom * y,
+                          zoom, zoom, color);
     }
 }

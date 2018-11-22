@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 
-#define DEBUG 1
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -157,11 +156,17 @@ void MainWindow::createGUI()
 
 
     QHBoxLayout *countersLayout = new QHBoxLayout();
-    PC_label = new QLabel("PC count:0x200");
-    I_label  = new QLabel("I  count:0x000");
     countersLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Expanding));
+
+#ifdef DEBUG
+    CTime_label = new QLabel("Time:");
+    countersLayout->addWidget(CTime_label);
+#elif
+    PC_label    = new QLabel("PC count:0x200");
+    I_label     = new QLabel("I  count:0x000");
     countersLayout->addWidget(PC_label);
     countersLayout->addWidget(I_label);
+#endif
 
     frameLayout->addLayout(cmdLayout);
     frameLayout->addLayout(mainLayout);
@@ -180,6 +185,11 @@ void MainWindow::createConnection()
     connect(this,&MainWindow::fileLoaded,m_emul,&Chip8Emu::loadData2Memory);
     connect(m_emul,&Chip8Emu::ReadyToWork,this,&MainWindow::readyToWork);
     connect(m_emul,&Chip8Emu::updateScreen,m_screen,&Screen::updateScreen);
+
+#ifdef DEBUG
+    connect(m_emul,&Chip8Emu::showTime,CTime_label,&QLabel::setText);
+#endif
+
 }
 
 QPoint MainWindow::calcDeskTopCenter(int width,int height)
@@ -191,5 +201,15 @@ QPoint MainWindow::calcDeskTopCenter(int width,int height)
     centerWindow.setY(centerWindow.y() - (height / 2) );
     return centerWindow;
 }
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if ( m_emul != nullptr )
+    {
+        m_emul->pressedKey(event->key());
+    }
+    QMainWindow::keyPressEvent(event);
+}
+
 
 

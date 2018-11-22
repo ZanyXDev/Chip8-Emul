@@ -25,9 +25,11 @@
 
 #include <QFileDialog>
 #include <QByteArray>
+#include <QKeyEvent>
 
 #include "screen.h"
 #include "chip8emu.h"
+#include "mydefs.h"
 
 
 class MainWindow : public QMainWindow
@@ -45,6 +47,9 @@ public slots:
     void startGame();
     void fileOpen();
     void readyToWork(bool flag);
+
+protected:
+    void keyPressEvent(QKeyEvent *event);
 
 private:
     void createActions();
@@ -65,6 +70,10 @@ private:
 
     QLabel* PC_label;
     QLabel* I_label;
+
+#ifdef DEBUG
+    QLabel* CTime_label;
+#endif
 
     QLabel* V0_label;
     QLabel* V1_label;

@@ -8,53 +8,59 @@
 #include <QCoreApplication>
 #include <QBitArray>
 #include <QRandomGenerator>
+#include <QTimer>
 
-#define RAM_SIZE 4096
-#define START_ADDR 0x200
-#define DISPLAY_X 64
-#define DISPLAY_Y 32
+#include "mydefs.h"
 
-#define DEBUG 1
+#ifdef DEBUG
+#include <QTime>
+#endif
+
 class Chip8Emu : public QObject
 {
     Q_OBJECT
 public:
-    enum WorkModeFlag {
-        Emulation = 0x1,
-        Debuging  = 0x2,
-        SuperMode = 0x5,
-        SuperModeDebug =  Debuging | SuperMode,
-        UnDefined = 0xf
-    };
-    Q_DECLARE_FLAGS(WorkMode, WorkModeFlag)
-
     explicit Chip8Emu(QObject *parent = nullptr);
 
 signals:
     void ReadyToWork( bool flag);
     void updateScreen( QBitArray screen );
+    void finishExecute();
+#ifdef DEBUG
+    void showTime(const QString &m_time);
+#endif
 
 public slots:
     void loadData2Memory(QByteArray &data);
     void startEmulation();
     void stopEmulation();
+    void pressedKey(int key);
+
+private slots:
+    void execute();
 private:
-
-    unsigned short PC;   // mem offset counter
-    unsigned short regI; // address register I
-    QByteArray m_memory; // 4k ram memory
-    QBitArray m_screen;
-
-    int opcode_count;
-    bool m_stopped;
-    WorkModeFlag m_mode;
-    short delay_timer;         // delay timer;
-    short sound_timer;         // sound timer;
-
     bool drawSprite(int vx,int vy, int n);
+
+    void initDevice();
     void executeNextOpcode();
     void decreaseTimers();
     void debugShowTime();
+
+    QTimer m_timer;
+    QByteArray m_memory;    // 4k ram memory
+    QBitArray m_screen;
+
+    unsigned short PC;      // mem offset counter
+    unsigned short regI;    // address register I
+    short delay_timer;      // delay timer;
+    short sound_timer;      // sound timer;
+    int opcode_count;
+    int cycles_per_second;
+    int m_ElapsedTime;
+
+    bool m_ExtendedMode;    // Chip8 (false) or SuperChip (true) mode
+    bool waitKeyPressed;
+
 };
 
 #endif // CHIP8EMU_H

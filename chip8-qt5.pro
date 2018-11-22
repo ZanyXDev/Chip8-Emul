@@ -22,7 +22,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 HEADERS += \
     src/mainwindow.h  \ 
     src/screen.h \
-    src/chip8emu.h
+    src/chip8emu.h \
+    src/mydefs.h	
 
 SOURCES = \
     src/main.cpp \
