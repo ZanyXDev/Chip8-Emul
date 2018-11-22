@@ -50,7 +50,7 @@ public slots:
 
 protected:
     void keyPressEvent(QKeyEvent *event);
-
+    void keyReleaseEvent(QKeyEvent *event);
 private:
     void createActions();
     void createStatusBar();
@@ -72,6 +72,7 @@ private:
     QLabel* I_label;
 
 #ifdef DEBUG
+    QTextEdit* textListing;
     QLabel* CTime_label;
 #endif
 
