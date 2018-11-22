@@ -25,6 +25,7 @@
 
 #include <QFileDialog>
 #include <QByteArray>
+#include <QKeyEvent>
 
 #include "screen.h"
 #include "chip8emu.h"
@@ -69,6 +70,10 @@ private:
 
     QLabel* PC_label;
     QLabel* I_label;
+
+#ifdef DEBUG
+    QLabel* CTime_label;
+#endif
 
     QLabel* V0_label;
     QLabel* V1_label;
