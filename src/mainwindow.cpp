@@ -130,30 +130,12 @@ void MainWindow::createGUI()
     m_screen = new Screen();
     mainLayout->addWidget(m_screen);
 
-    QTextEdit* textListing = new QTextEdit();
+#ifdef DEBUG
+    textListing = new QTextEdit();
     textListing->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // set ideal size as minimum Qimage size/ Can expand, only
     textListing->setReadOnly(true);
-
-#ifdef DEBUG
-    textListing->append(tr("0x200   2A0F    CLS"));
-    textListing->append(tr("0x201   1A0F    JP 0x800"));
-    textListing->append(tr("0x200   2A0F    CLS"));
-    textListing->append(tr("0x201   1A0F    JP 0x800"));
-    textListing->append(tr("0x200   2A0F    CLS"));
-    textListing->append(tr("0x201   1A0F    JP 0x800"));
-    textListing->append(tr("0x200   2A0F    CLS"));
-    textListing->append(tr("0x201   1A0F    JP 0x800"));
-    textListing->append(tr("0x200   2A0F    CLS"));
-    textListing->append(tr("0x201   1A0F    JP 0x800"));
-    textListing->append(tr("0x200   2A0F    CLS"));
-    textListing->append(tr("0x201   1A0F    JP 0x800"));
-    textListing->append(tr("0x200   2A0F    CLS"));
-    textListing->append(tr("0x201   1A0F    JP 0x800"));
-    textListing->append(tr("0x200   2A0F    CLS"));
-    textListing->append(tr("0x201   1A0F    JP 0x800"));
-#endif
     mainLayout->addWidget(textListing);
-
+#endif
 
     QHBoxLayout *countersLayout = new QHBoxLayout();
     countersLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Expanding));
@@ -185,6 +167,7 @@ void MainWindow::createConnection()
     connect(this,&MainWindow::fileLoaded,m_emul,&Chip8Emu::loadData2Memory);
     connect(m_emul,&Chip8Emu::ReadyToWork,this,&MainWindow::readyToWork);
     connect(m_emul,&Chip8Emu::updateScreen,m_screen,&Screen::updateScreen);
+    connect(m_emul,&Chip8Emu::showDecodeOpCode,textListing,&QTextEdit::append);
 
 #ifdef DEBUG
     connect(m_emul,&Chip8Emu::showTime,CTime_label,&QLabel::setText);

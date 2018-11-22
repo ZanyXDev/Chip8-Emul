@@ -72,6 +72,7 @@ private:
     QLabel* I_label;
 
 #ifdef DEBUG
+    QTextEdit* textListing;
     QLabel* CTime_label;
 #endif
 
