@@ -9,6 +9,9 @@
 
 #define DEBUG 1
 
+#define LAPS_TYPE_1 10
+#define LAPS_TYPE_2 30
+
 #define REFRESH_TIME 1000 / 60
 
 #endif // MYDEFS_H
