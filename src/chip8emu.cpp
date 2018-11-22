@@ -10,6 +10,7 @@ Chip8Emu::Chip8Emu(QObject *parent)
 
 void Chip8Emu::loadData2Memory(QByteArray &data)
 {
+    initDevice();
     qDebug() << "load: " << data.size() << " bytes";
     if ( !data.isEmpty() &&
          ( data.size() <= RAM_SIZE - START_ADDR)  )
@@ -21,7 +22,7 @@ void Chip8Emu::loadData2Memory(QByteArray &data)
 
 void Chip8Emu::startEmulation()
 {    
-    initDevice();
+
     m_timer.start();
 }
 
@@ -163,13 +164,13 @@ void Chip8Emu::executeNextOpcode()
             }
             break;
         case 0xA: // Annn LD I, nnn Значение регистра I устанавливается в nnn
-            asmTextString.append(QString("LD I, 0x%1 \t ; SET register I to 0x%1").arg( NNN,0,16 ));
+            asmTextString.append(QString("LD I, 0x%1 \t ; set register I to 0x%1").arg( NNN,0,16 ));
             break;
         case 0xB:// Bnnn JP V0, nnn Перейти по адресу nnn + значение в регистре V0.
             asmTextString.append(QString("JP V0, 0x%1 \t ; Jump to address V0 + %1").arg( NNN,0,16 ));
             break;
         case 0xC: //Cxkk RND Vx, kk Устанавливается Vx = (случайное число от 0 до 255) & kk
-            asmTextString.append(QString("RND V%1, 0x%2 \t ; SET register V%1 = random {0,255} & 0x%2 ").arg( X,0,16 ).arg( KK,0,16 ));
+            asmTextString.append(QString("RND V%1, 0x%2 \t ; Set register V%1 = random {0,255} & 0x%2 ").arg( X,0,16 ).arg( KK,0,16 ));
             break;
         case 0xD: /** Dxyn DRW Vx, Vy, n Нарисовать на экране спрайт. Эта инструкция считывает n байт по адресу
                     * содержащемуся в регистре I и рисует их на экране в виде спрайта c координатой Vx, Vy.
@@ -193,45 +194,46 @@ void Chip8Emu::executeNextOpcode()
         case 0xF:
             switch ( KK ) {
             case 0x07:// Fx07 LD Vx, DT Скопировать значение таймера задержки в регистр Vx
-                asmTextString.append(QString("LD V%1, DT \t ; SET register V%1 = DATA_TIMER ").arg( X,0,16 ) );
+                asmTextString.append(QString("LD V%1, DT \t ; Set register V%1 = DATA_TIMER ").arg( X,0,16 ) );
                 break;
             case 0x0A: // Fx0A LD Vx, K Ждать нажатия любой клавиши. Как только клавиша будет нажата записать ее номер
                 // в регистр Vx и перейти к выполнению следующей инструкции.
-                asmTextString.append(QString("LD V%1, K \t ; WAIT any key pressed, after SET register V%1 = KEY_NUMBER ").arg( X,0,16 ) );
+                asmTextString.append(QString("LD V%1, K \t ; Wait any key pressed, after SET register V%1 = KEY_NUMBER ").arg( X,0,16 ) );
+                waitKeyPressed = true;
                 break;
             case 0x15: // Fx15 LD DT, Vx Установить значение таймера задержки равным значению регистра Vx
-                asmTextString.append(QString("LD DT, V%1 \t ; SET register DATA_TIMER = V%1 ").arg( X,0,16 ) );
+                asmTextString.append(QString("LD DT, V%1 \t ; Set register DATA_TIMER = V%1 ").arg( X,0,16 ) );
                 break;
             case 0x18:// Fx18 LD ST, Vx Установить значение звукового таймера равным значению регистра Vx
-                asmTextString.append(QString("LD ST, V%1 \t ; SET register SOUND_TIMER = V%1 ").arg( X,0,16 ) );
+                asmTextString.append(QString("LD ST, V%1 \t ; Set register SOUND_TIMER = V%1 ").arg( X,0,16 ) );
                 break;
             case 0x1E: // Fx1E ADD I, Vx Сложить значения регистров I и Vx, результат сохранить в I. Т.е. I = I + Vx
-                asmTextString.append(QString("ADD I, V%1 \t ; SET register I = I + V%1 ").arg( X,0,16 ) );
+                asmTextString.append(QString("ADD I, V%1 \t ; Set register I = I + V%1 ").arg( X,0,16 ) );
                 break;
             case 0x29: // Fx29 LD F, Vx Используется для вывода на экран символов встроенного шрифта размером 4x5 пикселей.
                 // Команда загружает в регистр I адрес спрайта, значение которого находится в Vx.
                 // Например, нам надо вывести на экран цифру 5. Для этого загружаем в Vx число 5.
                 // Потом команда LD F, Vx загрузит адрес спрайта, содержащего цифру 5, в регистр I
-                asmTextString.append(QString("LD F, V%1 \t ; SHOW sprite font ").arg( X,0,16 ) );
+                asmTextString.append(QString("LD F, V%1 \t ; Show sprite font ").arg( X,0,16 ) );
                 break;
 
             case 0x30: // Fx30 LD HF, Vx Работает подобно команде Fx29, только загружает спрайты размером 8x10 пикселей
-                asmTextString.append(QString("LD HF, V%1 \t ; SHOW sprite font 8x10 pixel ").arg( X,0,16 ) );
+                asmTextString.append(QString("LD HF, V%1 \t ; Show sprite font 8x10 pixel ").arg( X,0,16 ) );
                 break;
             case 0x33: // Fx33 LD B, Vx Сохранить значение регистра Vx в двоично-десятичном (BCD) представлении по адресам I, I+1 и I+2
-                asmTextString.append(QString("LD B, V%1 \t ; SAVE register V%1 in memory {binary-decimal presentation},  address register I, I+1, I+2 ").arg( X,0,16 ) );
+                asmTextString.append(QString("LD B, V%1 \t ; Save register V%1 in memory {binary-decimal presentation},  address register I, I+1, I+2 ").arg( X,0,16 ) );
                 break;
             case 0x55: // Fx55 LD [I], Vx Сохранить значения регистров от V0 до Vx в памяти, начиная с адреса находящегося в I
-                asmTextString.append(QString("LD [I], V%1 \t ; SAVE registers {V0, V%1} in memory, start address = register I ").arg( X,0,16 ) );
+                asmTextString.append(QString("LD [I], V%1 \t ; Save registers {V0, V%1} in memory, start address = register I ").arg( X,0,16 ) );
                 break;
             case 0x65: // Fx65 LD Vx, [I] Загрузить значения регистров от V0 до Vx из памяти, начиная с адреса находящегося в I
-                asmTextString.append(QString("LD V%1, [I] \t ; LOAD registers {V0, V%1} from memory, start address = register I ").arg( X,0,16 ) );
+                asmTextString.append(QString("LD V%1, [I] \t ; Load registers {V0, V%1} from memory, start address = register I ").arg( X,0,16 ) );
                 break;
             case 0x75: //Fx75 LD R, Vx Сохранить регистры V0 - Vx в пользовательских флагах [RPL](http://en.wikipedia.org/wiki/RPL_(programming_language))
-                asmTextString.append(QString("LD R, V%1 \t ; SAVE registers {V0, V%1} in the users flag  [RPL](http://en.wikipedia.org/wiki/RPL_(programming_language)").arg( X,0,16 ) );
+                asmTextString.append(QString("LD R, V%1 \t ; Save registers {V0, V%1} in the users flag  [RPL](http://en.wikipedia.org/wiki/RPL_(programming_language)").arg( X,0,16 ) );
                 break;
             case 0x85: //Fx85 LD Vx, R Загрузить регистры V0 - Vx из пользовательских флагов RPL
-                asmTextString.append(QString("LD V%1, R \t ; LOAD registers {V0, V%1} from the users flag [RPL](http://en.wikipedia.org/wiki/RPL_(programming_language)").arg( X, 0,16) );
+                asmTextString.append(QString("LD V%1, R \t ; Load registers {V0, V%1} from the users flag [RPL](http://en.wikipedia.org/wiki/RPL_(programming_language)").arg( X, 0,16) );
                 break;
             default:
                 break;
@@ -242,11 +244,11 @@ void Chip8Emu::executeNextOpcode()
             break;
         }
 
-
         emit showDecodeOpCode ( QString("0x%1:\t%2\t%3").arg(PC,0,16).arg(opCode,0,16).arg(asmTextString) );
 
+        PC+=2;
     }
-    PC+=2;
+
     return;
 }
 
@@ -342,7 +344,7 @@ void Chip8Emu::initDevice()
     m_screen.fill(false, DISPLAY_X * DISPLAY_Y);
     m_ExtendedMode = false;
     m_ElapsedTime = 0;
-    waitKeyPressed = true;
+    waitKeyPressed = false;
 }
 
 /**

@@ -46,7 +46,7 @@ private:
     void initDevice();
     void executeNextOpcode();
     void decreaseTimers();
-    void debugShowTime();
+
 
     QTimer m_timer;
     QByteArray m_memory;    // 4k ram memory
