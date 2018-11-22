@@ -35,8 +35,8 @@ signals:
 public slots:
     void loadData2Memory(QByteArray &data);
     void startEmulation();
-    void stopEmulation();
-    void pressedKey(int key);
+    void stopEmulation();   
+    void changeKeyState(int key, bool state);
 
 private slots:
     void execute();
@@ -47,10 +47,14 @@ private:
     void executeNextOpcode();
     void decreaseTimers();
 
+    void setRegister(unsigned short m_reg, unsigned short m_value);
+    unsigned short getRegister(unsigned short m_reg);
 
     QTimer m_timer;
     QByteArray m_memory;    // 4k ram memory
+    QByteArray m_regs;      // 16 registers;
     QBitArray m_screen;
+    QBitArray m_keys;
 
     unsigned short PC;      // mem offset counter
     unsigned short regI;    // address register I
@@ -59,6 +63,7 @@ private:
     int opcode_count;
     int cycles_per_second;
     int m_ElapsedTime;
+    unsigned short currentRegister;
 
     bool m_ExtendedMode;    // Chip8 (false) or SuperChip (true) mode
     bool waitKeyPressed;

@@ -50,7 +50,7 @@ public slots:
 
 protected:
     void keyPressEvent(QKeyEvent *event);
-
+    void keyReleaseEvent(QKeyEvent *event);
 private:
     void createActions();
     void createStatusBar();

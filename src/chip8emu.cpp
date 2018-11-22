@@ -111,6 +111,7 @@ void Chip8Emu::executeNextOpcode()
             break;
         case 0x6: // 6xkk LD Vx, kk Загрузить в регистр Vx число kk, т.е. Vx = kk
             asmTextString.append(QString("LD V%1, 0x%2 \t ; Load 0x%2 to register V%1 ").arg( X, 0, 16 ).arg( KK, 0, 16 ));
+            setRegister( X, KK );
             break;
         case 0x7: // 7xkk ADD Vx, kk Установить Vx = Vx + kk
             asmTextString.append(QString("ADD V%1, 0x%2 \t ; V%1 = V%1 + 0x%2").arg( X,0,16 ).arg( KK, 0, 16 ));
@@ -196,9 +197,13 @@ void Chip8Emu::executeNextOpcode()
             case 0x07:// Fx07 LD Vx, DT Скопировать значение таймера задержки в регистр Vx
                 asmTextString.append(QString("LD V%1, DT \t ; Set register V%1 = DATA_TIMER ").arg( X,0,16 ) );
                 break;
-            case 0x0A: // Fx0A LD Vx, K Ждать нажатия любой клавиши. Как только клавиша будет нажата записать ее номер
-                // в регистр Vx и перейти к выполнению следующей инструкции.
+            case 0x0A:
+                /**
+                 * Fx0A LD Vx, K Ждать нажатия любой клавиши.
+                 * Как только клавиша будет нажата записать ее номер в регистр Vx и перейти к выполнению следующей инструкции.
+                 */
                 asmTextString.append(QString("LD V%1, K \t ; Wait any key pressed, after SET register V%1 = KEY_NUMBER ").arg( X,0,16 ) );
+                currentRegister = X;
                 waitKeyPressed = true;
                 break;
             case 0x15: // Fx15 LD DT, Vx Установить значение таймера задержки равным значению регистра Vx
@@ -258,6 +263,27 @@ void Chip8Emu::decreaseTimers()
     {
         --delay_timer;
     }
+}
+
+
+
+void Chip8Emu::setRegister(unsigned short m_reg, unsigned short m_value)
+{
+    if (m_reg < 16)
+    {
+        m_regs[m_reg] = m_value ;
+    }
+
+}
+
+unsigned short Chip8Emu::getRegister(unsigned short m_reg)
+{
+    unsigned short value = 0;
+    if (m_reg < 16)
+    {
+        value = m_regs.at(m_reg) ;
+    }
+    return value;
 }
 
 /**
@@ -341,103 +367,26 @@ void Chip8Emu::initDevice()
     sound_timer = 0;               // clear sound timer;
     opcode_count = 0 ;
     m_memory.fill(0x0,RAM_SIZE);   // clear 4k ram memory
+    m_regs.fill(0x0,16);
     m_screen.fill(false, DISPLAY_X * DISPLAY_Y);
+    m_keys.fill(false, KEY_PAD);   // All keys unPressed
     m_ExtendedMode = false;
     m_ElapsedTime = 0;
     waitKeyPressed = false;
+    currentRegister = 0;
 }
 
-/**
- * 76543210     76543210     76543210     76543210     76543210     76543210
-..1.....0x20 .111....0x70 .111....0x70 ...1....0x20 11111...0xf8 ........
-.11.....0x60 1...1...0x88 1...1...0x88 ..11....0x60 1.......0x80 .111....0x70
-1.1.....0xa0 ....1...0x8  ....1...0x8  ..11....0x60 1.......0x80 .111....0x70
-..1.....0x20 ....1...0x8  ....1...0x8  .1.1....0x50 1.......0x80 ........
-..1.....0x20 ...1....0x10 ..11....0x30 .1.1....0x50 .111....0x70 ........
-..1.....0x20 ..1.....0x20 ....1...0x8  1..1....0x88 ....1...0x8  ........
-..1.....0x20 .1......0x40 ....1...0x8  11111...0xf8 ....1...0x8  .111....0x70
-..1.....0x20 1.......0x80 1...1...0x88 ...1....0x10 1...1...0x88 .111....0x70
-11111...0xf8 11111...0xf8 .111....0x70 ..111...0x70 .111....0x70 ........
 
-.111....0x70 11111...0xf8 .111....0x70 .111....0x70 .111....0x70 ........
-1...1...0x88 1...1...0x88 1...1...0x88 1...1...0x88 1...1...0x88 ........
-1.......0x80 ....1...0x8  1...1...0x88 1...1...0x88 1...1...0x88 ........
-1.......0x80 ...1....0x10 1...1...0x88 1...1...0x88 1..11...0x98 ........
-1111....0xf8 ..1.....0x20 .111....0x70 .111....0x70 1.1.1...0xa8 ........
-1...1...0x88 .1......0x40 1...1...0x88 ....1...0x8  11..1...0xc8 ........
-1...1...0x88 1.......0x80 1...1...0x88 ....1...0x8  1...1...0x88 ........
-1...1...0x88 1.......0x80 1...1...0x88 1...1...0x88 1...1...0x88 ..111...0x70
-.111....0x70 1.......0x80 .111....0x70 .111....0x70 .111....0x70 ..111...0x70
 
-*/
-
-void Chip8Emu::pressedKey(int key)
+void Chip8Emu::changeKeyState(int key, bool state)
 {
-    /**
-        * Key mappings
-        * The original CHIP-8 keypad | This is emulated as follows
-        * +-+-+-+-+                  | +-+-+-+-+
-        * |1|2|3|C|                  | |1|2|3|4|
-        * +-+-+-+-+                  | +-+-+-+-+
-        * |4|5|6|D|                  | |Q|W|E|R|
-        * +-+-+-+-+                  | +-+-+-+-+
-        * |7|8|9|E|                  | |A|S|D|F|
-        * +-+-+-+-+                  | +-+-+-+-+
-        * |A|0|B|F|                  | |Z|X|C|V|
-        * +-+-+-+-+                  | +-+-+-+-+
-    */
-    switch (key) {
-    case Qt::Key_1:
-        waitKeyPressed = false;
-        break;
-    case Qt::Key_2:
-        waitKeyPressed = false;
-        break;
-    case Qt::Key_3:
-        waitKeyPressed = false;
-        break;
-    case Qt::Key_4:
-        waitKeyPressed = false;
-        break;
-    case Qt::Key_Q:
-        waitKeyPressed = false;
-        break;
-    case Qt::Key_W:
-        waitKeyPressed = false;
-        break;
-    case Qt::Key_E:
-        waitKeyPressed = false;
-        break;
-    case Qt::Key_R:
-        waitKeyPressed = false;
-        break;
-    case Qt::Key_A:
-        waitKeyPressed = false;
-        break;
-    case Qt::Key_S:
-        waitKeyPressed = false;
-        break;
-    case Qt::Key_D:
-        waitKeyPressed = false;
-        break;
-    case Qt::Key_F:
-        waitKeyPressed = false;
-        break;
-    case Qt::Key_Z:
-        waitKeyPressed = false;
-        break;
-    case Qt::Key_X:
-        waitKeyPressed = true;
-        break;
-    case Qt::Key_C:
-        waitKeyPressed = false;
-        break;
-    case Qt::Key_V:
-        waitKeyPressed = false;
-        break;
-    default:
-        break;
-    }
+     m_keys.setBit(key, state);
+
+     if (waitKeyPressed)
+     {
+         setRegister(currentRegister, key);
+         waitKeyPressed = false;
+     }
 }
 
 void Chip8Emu::execute()
