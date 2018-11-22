@@ -2,91 +2,51 @@
 
 Chip8Emu::Chip8Emu(QObject *parent)
     : QObject(parent)
-    , PC(START_ADDR)
 {
-    PC = START_ADDR;
-    regI = START_ADDR;
-    m_memory.fill(0x0,RAM_SIZE);   // clear 4k ram memory
-    m_stopped = false;
-    opcode_count = 0 ;
+    initDevice();
 
-    delay_timer = 0;               // clear delay timer;
-    sound_timer = 0;               // clear sound timer;
-    m_screen = QBitArray(DISPLAY_X * DISPLAY_Y,false);  // clear screen map
-
+    connect(&m_timer,&QTimer::timeout,this,&Chip8Emu::execute);
 }
 
 void Chip8Emu::loadData2Memory(QByteArray &data)
 {
     qDebug() << "load: " << data.size() << " bytes";
     if ( !data.isEmpty() &&
-         ( data.size() <= RAM_SIZE - START_ADDR)  ) {
+         ( data.size() <= RAM_SIZE - START_ADDR)  )
+    {
         m_memory.insert(START_ADDR,data);
-
         emit ReadyToWork(true);
-        m_stopped = false;
     }
 }
 
 void Chip8Emu::startEmulation()
-{
-
-    QElapsedTimer et;
-    et.start();
-
-    opcode_count = 0;
-    int cycles_per_second;
-
-    while (!m_stopped) {
-        QCoreApplication::processEvents ( QEventLoop::AllEvents );
-
-        if (m_mode == Chip8Emu::SuperMode) {
-            cycles_per_second = 10; // execute 600 opcodes per second
-        } else {
-            cycles_per_second = 30; // 1800 opcodes per second
-        }
-        if (opcode_count < cycles_per_second) {
-            executeNextOpcode();
-            opcode_count++;
-        }
-
-        //decrease timers every 1/60sec and redraw screen
-        if (et.hasExpired(1000/60)) {
-            decreaseTimers();
-            et.restart();
-            emit updateScreen(m_screen);
-            opcode_count = 0;
-        }
-        //if (emu->stop == true) closeRom();
-    }
-
+{    
+    initDevice();
+    m_timer.start();
 }
 
 void Chip8Emu::stopEmulation()
 {
-    m_stopped = true;
+
 }
 
 void Chip8Emu::executeNextOpcode()
 {
-    //debugShowTime();
-    drawSprite(5,5,9);
+    if ( !waitKeyPressed )
+    {
+        PC++;
+    }else
+    {
+        drawSprite(5,5,9);
+    }
 }
 
 void Chip8Emu::decreaseTimers()
 {
-    if (delay_timer > 0) {
+    if (delay_timer > 0)
+    {
         --delay_timer;
     }
-}
-
-void Chip8Emu::debugShowTime()
-{
-    // int idx = DISPLAY_X * DISPLAY_Y;
-    // for (int i=0; i< 24; ++i){
-    //        m_screen.toggleBit(QRandomGenerator::global()->bounded( idx ));
-    //  }
-
 }
 
 /**
@@ -111,7 +71,7 @@ bool Chip8Emu::drawSprite(int vx,int vy, int n)
     unsigned short drw;
     unsigned short idx ;
 #ifdef DEBUG
-/**
+    /**
   * Test sprite 8x9 pixel
   * DB $.111.... 0x70
   * DB $1...1... 0x88
@@ -134,19 +94,24 @@ bool Chip8Emu::drawSprite(int vx,int vy, int n)
     m_memory[regI+8] = 0xf8;
 #endif
 
-    if ( 0 == n){ // check how many rows draw
+    if ( 0 == n)
+    { // check how many rows draw
         maxLine = 16;
-    }else {
+    }else
+    {
         maxLine = n;
     }
 
-    for (int row = 0; row < maxLine; ++row){
+    for (int row = 0; row < maxLine; ++row)
+    {
         drw = m_memory.at(regI+row);
-        for (int col = 0; col < 8; ++col){
+        for (int col = 0; col < 8; ++col)
+        {
             showPixel = drw  & (1 << (7 - col));
             idx = (vx + col) + ((vy + row) * DISPLAY_X);
 
-            if ( m_screen.testBit( idx ) && !showPixel){
+            if ( m_screen.testBit( idx ) && !showPixel)
+            {
                 vf_flag = true;
             }
 
@@ -155,6 +120,20 @@ bool Chip8Emu::drawSprite(int vx,int vy, int n)
     }
 
     return vf_flag;
+}
+
+void Chip8Emu::initDevice()
+{
+    PC = START_ADDR;               // set mem offset counter
+    regI = START_ADDR;
+    delay_timer = 0;               // clear delay timer;
+    sound_timer = 0;               // clear sound timer;
+    opcode_count = 0 ;
+    m_memory.fill(0x0,RAM_SIZE);   // clear 4k ram memory
+    m_screen.fill(false, DISPLAY_X * DISPLAY_Y);
+    m_ExtendedMode = false;
+    m_ElapsedTime = 0;
+    waitKeyPressed = true;
 }
 
 /**
@@ -181,7 +160,110 @@ bool Chip8Emu::drawSprite(int vx,int vy, int n)
 
 */
 
+void Chip8Emu::pressedKey(int key)
+{
+    /**
+        * Key mappings
+        * The original CHIP-8 keypad | This is emulated as follows
+        * +-+-+-+-+                  | +-+-+-+-+
+        * |1|2|3|C|                  | |1|2|3|4|
+        * +-+-+-+-+                  | +-+-+-+-+
+        * |4|5|6|D|                  | |Q|W|E|R|
+        * +-+-+-+-+                  | +-+-+-+-+
+        * |7|8|9|E|                  | |A|S|D|F|
+        * +-+-+-+-+                  | +-+-+-+-+
+        * |A|0|B|F|                  | |Z|X|C|V|
+        * +-+-+-+-+                  | +-+-+-+-+
+    */
+    switch (key) {
+    case Qt::Key_1:
+        waitKeyPressed = false;
+        break;
+    case Qt::Key_2:
+        waitKeyPressed = false;
+        break;
+    case Qt::Key_3:
+        waitKeyPressed = false;
+        break;
+    case Qt::Key_4:
+        waitKeyPressed = false;
+        break;
+    case Qt::Key_Q:
+        waitKeyPressed = false;
+        break;
+    case Qt::Key_W:
+        waitKeyPressed = false;
+        break;
+    case Qt::Key_E:
+        waitKeyPressed = false;
+        break;
+    case Qt::Key_R:
+        waitKeyPressed = false;
+        break;
+    case Qt::Key_A:
+        waitKeyPressed = false;
+        break;
+    case Qt::Key_S:
+        waitKeyPressed = false;
+        break;
+    case Qt::Key_D:
+        waitKeyPressed = false;
+        break;
+    case Qt::Key_F:
+        waitKeyPressed = false;
+        break;
+    case Qt::Key_Z:
+        waitKeyPressed = false;
+        break;
+    case Qt::Key_X:
+        waitKeyPressed = true;
+        break;
+    case Qt::Key_C:
+        waitKeyPressed = false;
+        break;
+    case Qt::Key_V:
+        waitKeyPressed = false;
+        break;
+    default:
+        break;
+    }
+}
 
+void Chip8Emu::execute()
+{
+    m_ElapsedTime++;
+
+    if (PC > m_memory.size() - 2)
+    {
+        emit finishExecute();
+        return;
+    }
+
+    //логическое выражение ? выражение 1 : выражение 2
+
+    if (opcode_count < ( m_ExtendedMode ? LAPS_TYPE_1 : LAPS_TYPE_2) )
+    {
+        executeNextOpcode();
+        opcode_count++;
+    }
+
+    //decrease timers every 1/60sec and redraw screen
+    if (m_ElapsedTime > REFRESH_TIME )
+    {
+        decreaseTimers();
+
+#ifdef DEBUG
+        QString str = QString("%1 PC:%2")
+                .arg(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                .arg(PC,0,10);
+
+        emit  showTime(str);
+#endif
+        emit updateScreen(m_screen);
+        opcode_count = 0;
+        m_ElapsedTime = 0;
+    }
+}
 
 
 
