@@ -348,10 +348,11 @@ void Chip8Emu::executeNextOpcode()
             // Команда загружает в регистр I адрес спрайта, значение которого находится в Vx.
             // Например, нам надо вывести на экран цифру 5. Для этого загружаем в Vx число 5.
             // Потом команда LD F, Vx загрузит адрес спрайта, содержащего цифру 5, в регистр I
-            asmTextString.append(QString("LD F, V%1 \t ; Show sprite font ").arg( X,0,16 ) );            
+            asmTextString.append(QString("LD F, V%1 \t ; Show sprite font ").arg( X,0,16 ) );
+            setRegI( getRegister( X ) * 5 );
             break;
         case 0x30: // Fx30 LD HF, Vx Работает подобно команде Fx29, только загружает спрайты размером 8x10 пикселей
-            asmTextString.append(QString("LD HF, V%1 \t ; Show sprite font 8x10 pixel ").arg( X,0,16 ) );
+            asmTextString.append(QString("LD HF, V%1 \t ; Show sprite font 8x10 pixel ").arg( X,0,16 ) );            
             break;
         case 0x33: // Fx33 LD B, Vx Сохранить значение регистра Vx в двоично-десятичном (BCD) представлении по адресам I, I+1 и I+2
             asmTextString.append(QString("LD B, V%1 \t ; Save register V%1 in memory {binary-decimal presentation},  address register I, I+1, I+2 ").arg( X,0,16 ) );
