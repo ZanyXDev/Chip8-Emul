@@ -301,7 +301,7 @@ void Chip8Emu::decreaseTimers()
 
 
 
-void Chip8Emu::setRegister(unsigned short m_reg, unsigned short m_value)
+void Chip8Emu::setRegister(quint8 m_reg, quint8 m_value)
 {
     if (m_reg < 16)
     {
@@ -310,7 +310,7 @@ void Chip8Emu::setRegister(unsigned short m_reg, unsigned short m_value)
 
 }
 
-unsigned short Chip8Emu::getRegister(unsigned short m_reg)
+unsigned short Chip8Emu::getRegister(quint8 m_reg)
 {
     unsigned short value = 0;
     if (m_reg < 16)
@@ -320,50 +320,12 @@ unsigned short Chip8Emu::getRegister(unsigned short m_reg)
     return value;
 }
 
-/**
- * @brief drawSprite
- * @param idx
- * @param sprite
- * @return
- * @note реализует поведение опкода DXYN. Она рисует в массив m_screen
- * спрайт находящийся по смещению I. Координаты спрайта берутся из регистров VX и VY.
- * Один байт по смещению I представляет одну строку спрайта для CHIP-8,
- * и полстроки для SCHIP (при N=0). Каждый бит в этом байте представляет отдельный пиксель.
- * Количество строк N извлекается из опкода. Если N=0, то в спрайте 16 строк.
- * Также не стоит забывать о том, что если мы рисуем пиксель “поверх” уже существующего
- * пикселя, то эта точка экрана очистится, а регистр VF установится в 1.
- * То есть рисуем методом XOR.
- */
-bool Chip8Emu::drawSprite(int vx,int vy, int n)
+void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
 {
-    bool vf_flag = false;
     bool showPixel;
     unsigned short maxLine;
     unsigned short drw;
     unsigned short idx ;
-#ifdef DEBUG
-    /**
-  * Test sprite 8x9 pixel
-  * DB $.111.... 0x70
-  * DB $1...1... 0x88
-  * DB $....1... 0x8
-  * DB $....1... 0x8
-  * DB $...1.... 0x10
-  * DB $..1..... 0x20
-  * DB $.1...... 0x40
-  * DB $1....... 0x80
-  * DB $11111... 0xf8
-*/
-    m_memory[regI] = 0x70;
-    m_memory[regI+1] = 0x88;
-    m_memory[regI+2] = 0x8;
-    m_memory[regI+3] = 0x8;
-    m_memory[regI+4] = 0x10;
-    m_memory[regI+5] = 0x20;
-    m_memory[regI+6] = 0x40;
-    m_memory[regI+7] = 0x80;
-    m_memory[regI+8] = 0xf8;
-#endif
 
     if ( 0 == n)
     { // check how many rows draw
@@ -383,14 +345,12 @@ bool Chip8Emu::drawSprite(int vx,int vy, int n)
 
             if ( m_screen.testBit( idx ) && !showPixel)
             {
-                vf_flag = true;
+
             }
 
             m_screen.setBit( idx, showPixel);
         }
     }
-
-    return vf_flag;
 }
 
 void Chip8Emu::initDevice()
@@ -410,7 +370,7 @@ void Chip8Emu::initDevice()
     currentRegister = 0;
 }
 
-void Chip8Emu::changeKeyState(int key, bool state)
+void Chip8Emu::changeKeyState(quint8 key, bool state)
 {
     m_keys.setBit(key, state);
 
