@@ -436,7 +436,7 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
     bool newPixel;
     bool existPixel;
     quint8 maxLine;
-    quint16 drw;
+    quint8 drw;
     quint16 idx ;
 
 
