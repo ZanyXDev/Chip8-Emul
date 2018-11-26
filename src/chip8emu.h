@@ -72,6 +72,7 @@ private:
     void moveLeft();
     void moveDown( quint8 m_line );
 
+    quint8 getRealKey (quint8 m_emu_key);
 
     /**
      * @brief getSumCF sum x and y with carry flag
@@ -90,7 +91,6 @@ private:
 
     quint16 PC;             // mem offset counter
     quint16 regI;           // 16bit address register I
-   // quint16 SP;             // stack counter
 
     quint8 delay_timer;     // 8bit delay timer;
     quint8 sound_timer;     // 8bit sound timer;
@@ -98,10 +98,9 @@ private:
     quint16 opcode_count;
     quint32 cycles_per_second;
     quint32 m_ElapsedTime;
-    quint8 currentRegister;
 
     bool m_ExtendedMode;    // Chip8 (false) or SuperChip (true) mode
-    bool waitKeyPressed;
+
 
 };
 
