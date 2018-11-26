@@ -308,14 +308,13 @@ void Chip8Emu::setRegister(quint8 m_reg, quint8 m_value)
 
 }
 
-unsigned short Chip8Emu::getRegister(quint8 m_reg)
+quint16 Chip8Emu::getRegister(quint8 m_reg)
 {
-    unsigned short value = 0;
-    if (m_reg < 16)
+    if (m_reg <= REG_VF)
     {
-        value = m_regs.at(m_reg) ;
+        return m_regs.at(m_reg) ;
     }
-    return value;
+    return 0x0;
 }
 
 // -- Draw function
