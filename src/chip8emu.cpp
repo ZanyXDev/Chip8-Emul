@@ -32,17 +32,7 @@ void Chip8Emu::stopEmulation()
 }
 
 void Chip8Emu::executeNextOpcode()
-{
-    QString asmTextString;
-
-    unsigned short opCode  = ( (m_memory.at(PC) & 0x00FF) << 8 ) | ( m_memory.at(PC+1) & 0x00FF) ;
-    unsigned short HI  = (opCode & 0xF000) >> 12;
-    unsigned short LO  = (opCode & 0x000F);
-    unsigned short X   = (opCode & 0x0F00) >> 8;
-    unsigned short Y   = (opCode & 0x00F0) >> 4;
-    unsigned short KK  = (opCode & 0x00FF);
-    unsigned short NNN = (opCode & 0x0FFF);
-
+{   
     if (PC > m_memory.size() - 2)
     {
         emit finishExecute();
@@ -51,10 +41,22 @@ void Chip8Emu::executeNextOpcode()
 
     if ( !waitKeyPressed )
     {
+        QString asmTextString;
+
+        unsigned short opCode  = ( (m_memory.at(PC) & 0x00FF) << 8 ) | ( m_memory.at(PC+1) & 0x00FF) ;
+        unsigned short HI  = (opCode & 0xF000) >> 12;
+        unsigned short LO  = (opCode & 0x000F);
+        unsigned short X   = (opCode & 0x0F00) >> 8;
+        unsigned short Y   = (opCode & 0x00F0) >> 4;
+        unsigned short KK  = (opCode & 0x00FF);
+        unsigned short NNN = (opCode & 0x0FFF);
+
         switch  ( HI ) {
         case 0x0:
-            if ( KK == 0xE0 ){ // * 00E0 CLS   Очистить экран
+            if ( KK == 0xE0 )
+            { // * 00E0 CLS   Очистить экран
                 asmTextString.append(QString("CLS \t ; Clear screen"));
+                m_screen.fill(false, DISPLAY_X * DISPLAY_Y);
             }
 
             if ( KK == 0xEE ){ // * 00EE RET   Возвратиться из подпрограммы
