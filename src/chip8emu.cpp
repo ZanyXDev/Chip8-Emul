@@ -26,6 +26,11 @@ void Chip8Emu::startEmulation()
     m_timer.start();
 }
 
+void Chip8Emu::stepEmulation()
+{
+    this->execute();
+}
+
 void Chip8Emu::stopEmulation()
 {
 

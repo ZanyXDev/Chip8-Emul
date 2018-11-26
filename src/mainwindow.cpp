@@ -162,6 +162,7 @@ void MainWindow::createConnection()
 {
     connect(newGameAct, &QAction::triggered, this, &MainWindow::startGame);
     connect(startGameBtn,&QPushButton::clicked,m_emul,&Chip8Emu::startEmulation);
+    connect(nextStepBtn,&QPushButton::clicked,m_emul,&Chip8Emu::stepEmulation);
     connect(stopGameBtn,&QPushButton::clicked,m_emul,&Chip8Emu::stopEmulation);
 
     connect(this,&MainWindow::fileLoaded,m_emul,&Chip8Emu::loadData2Memory);
@@ -169,6 +170,7 @@ void MainWindow::createConnection()
     connect(m_emul,&Chip8Emu::updateScreen,m_screen,&Screen::updateScreen);
     connect(m_emul,&Chip8Emu::showDecodeOpCode,textListing,&QTextEdit::append);
     connect(this,&MainWindow::changeKeyState,m_emul,&Chip8Emu::changeKeyState);
+
 
 #ifdef DEBUG
     connect(m_emul,&Chip8Emu::showTime,CTime_label,&QLabel::setText);
