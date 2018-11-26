@@ -92,11 +92,15 @@ void Chip8Emu::executeNextOpcode()
                 case 0xD: // EXIT Завершить программу
                     asmTextString.append(QString("EXIT ; Shutdown programm"));
                     break;
-                case 0xE:  // LOW Выключить расширенный режим экрана. Переход на разрешение 64x32
+                case 0xE:
+                    // 00FE LOW Выключить расширенный режим экрана. Переход на разрешение 64x32
                     asmTextString.append(QString("LOW ; Extend mode OFF"));
+                    m_ExtendedMode = false;
                     break;
-                case 0xF:  // HIGH Включить расширенный режим экрана. Переход на разрешение 128x64
+                case 0xF:
+                    // 00FF HIGH Включить расширенный режим экрана. Переход на разрешение 128x64
                     asmTextString.append(QString("HIGH ; Extend mode ON"));
+                    m_ExtendedMode = true;
                     break;
                 default:
                     break;
