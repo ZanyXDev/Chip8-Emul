@@ -343,13 +343,13 @@ void Chip8Emu::executeNextOpcode()
             asmTextString.append(QString("ADD I, V%1 \t ; Set register I = I + V%1 ").arg( X,0,16 ) );
             setRegI( getRegI() + getRegister( X ) );
             break;
-        case 0x29: // Fx29 LD F, Vx Используется для вывода на экран символов встроенного шрифта размером 4x5 пикселей.
+        case 0x29:
+            // Fx29 LD F, Vx Используется для вывода на экран символов встроенного шрифта размером 4x5 пикселей.
             // Команда загружает в регистр I адрес спрайта, значение которого находится в Vx.
             // Например, нам надо вывести на экран цифру 5. Для этого загружаем в Vx число 5.
             // Потом команда LD F, Vx загрузит адрес спрайта, содержащего цифру 5, в регистр I
-            asmTextString.append(QString("LD F, V%1 \t ; Show sprite font ").arg( X,0,16 ) );
+            asmTextString.append(QString("LD F, V%1 \t ; Show sprite font ").arg( X,0,16 ) );            
             break;
-
         case 0x30: // Fx30 LD HF, Vx Работает подобно команде Fx29, только загружает спрайты размером 8x10 пикселей
             asmTextString.append(QString("LD HF, V%1 \t ; Show sprite font 8x10 pixel ").arg( X,0,16 ) );
             break;
@@ -498,6 +498,10 @@ void Chip8Emu::initDevice()
     m_smallFont.append(0xE0).append(0x90).append(0x90).append(0x90).append(0xE0);	// D
     m_smallFont.append(0xF0).append(0x80).append(0xF0).append(0x80).append(0xF0);	// E
     m_smallFont.append(0xF0).append(0x80).append(0xF0).append(0x80).append(0x80);	// F
+
+    // Load font
+    m_memory.insert(0,m_smallFont);
+
 }
 
 void Chip8Emu::changeKeyState(quint8 key, bool state)
