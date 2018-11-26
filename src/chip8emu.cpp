@@ -318,6 +318,22 @@ unsigned short Chip8Emu::getRegister(quint8 m_reg)
     return value;
 }
 
+// -- Draw function
+void Chip8Emu::moveDown(quint8 m_line)
+{
+    qDebug() << "move down: " << m_line;
+}
+
+void Chip8Emu::moveRight()
+{
+    qDebug() << "move right, mode:" << m_ExtendedMode;
+}
+
+void Chip8Emu::moveLeft()
+{
+    qDebug() << "move left, mode:" << m_ExtendedMode;
+}
+
 void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
 {
     bool showPixel;
