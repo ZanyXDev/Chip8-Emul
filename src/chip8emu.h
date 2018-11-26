@@ -86,6 +86,9 @@ private:
     QTimer m_timer;
     QByteArray m_memory;    // 4k ram memory
     QByteArray m_regs;      // 16 registers 8bit size;
+    QByteArray m_smallFont; // size 16x5 small font
+    QByteArray m_bigFont;   // size 16x10 big font
+
     QVector<quint16> m_stack;     // deep 16 levels;
     QBitArray m_screen;
     QBitArray m_keys;

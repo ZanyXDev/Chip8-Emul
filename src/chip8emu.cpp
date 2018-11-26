@@ -33,7 +33,7 @@ void Chip8Emu::stepEmulation()
 
 void Chip8Emu::stopEmulation()
 {
-
+    m_timer.stop();
 }
 
 void Chip8Emu::executeNextOpcode()
@@ -481,6 +481,23 @@ void Chip8Emu::initDevice()
     m_keys.fill(false, KEY_PAD);   // All keys unPressed
     m_ExtendedMode = false;
     m_ElapsedTime = 0;
+
+    m_smallFont.append(0xF0).append(0x90).append(0x90).append(0x90).append(0xF0); 	// 0
+    m_smallFont.append(0x20).append(0x60).append(0x20).append(0x20).append(0x70);	// 1
+    m_smallFont.append(0xF0).append(0x10).append(0xF0).append(0x80).append(0xF0);	// 2
+    m_smallFont.append(0xF0).append(0x10).append(0xF0).append(0x10).append(0xF0);	// 3
+    m_smallFont.append(0x90).append(0x90).append(0xF0).append(0x10).append(0x10);	// 4
+    m_smallFont.append(0xF0).append(0x80).append(0xF0).append(0x10).append(0xF0);	// 5
+    m_smallFont.append(0xF0).append(0x80).append(0xF0).append(0x90).append(0xF0);	// 6
+    m_smallFont.append(0xF0).append(0x10).append(0x20).append(0x40).append(0x40);	// 7
+    m_smallFont.append(0xF0).append(0x90).append(0xF0).append(0x90).append(0xF0);	// 8
+    m_smallFont.append(0xF0).append(0x90).append(0xF0).append(0x10).append(0xF0);	// 9
+    m_smallFont.append(0xF0).append(0x90).append(0xF0).append(0x90).append(0x90);	// A
+    m_smallFont.append(0xE0).append(0x90).append(0xE0).append(0x90).append(0xE0);	// B
+    m_smallFont.append(0xF0).append(0x80).append(0x80).append(0x80).append(0xF0);	// C
+    m_smallFont.append(0xE0).append(0x90).append(0x90).append(0x90).append(0xE0);	// D
+    m_smallFont.append(0xF0).append(0x80).append(0xF0).append(0x80).append(0xF0);	// E
+    m_smallFont.append(0xF0).append(0x80).append(0xF0).append(0x80).append(0x80);	// F
 }
 
 void Chip8Emu::changeKeyState(quint8 key, bool state)
