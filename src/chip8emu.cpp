@@ -54,12 +54,15 @@ void Chip8Emu::executeNextOpcode()
         switch  ( HI ) {
         case 0x0:
             if ( KK == 0xE0 )
-            { // * 00E0 CLS   Очистить экран
+            {
+                // * 00E0 CLS   Очистить экран
                 asmTextString.append(QString("CLS \t ; Clear screen"));
                 m_screen.fill(false, DISPLAY_X * DISPLAY_Y);
             }
 
-            if ( KK == 0xEE ){ // * 00EE RET   Возвратиться из подпрограммы
+            if ( KK == 0xEE )
+            {
+                // * 00EE RET   Возвратиться из подпрограммы
                 asmTextString.append(QString("RET \t ; Return sub-routine"));
             }
 
