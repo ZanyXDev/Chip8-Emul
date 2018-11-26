@@ -42,6 +42,7 @@ signals:
     void startEmulation();
     void stopEmulation();
     void fileLoaded(QByteArray &data);
+    void changeKeyState(quint8 key, bool state);
 
 public slots:
     void startGame();
@@ -56,6 +57,8 @@ private:
     void createStatusBar();
     void createGUI();
     void createConnection();
+
+    quint8 mapKey(int mkey);
 
     bool workMode;
     QPoint calcDeskTopCenter(int width,int height);
