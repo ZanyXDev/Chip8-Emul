@@ -109,8 +109,10 @@ void Chip8Emu::executeNextOpcode()
             // 0nnn SYS nnn Перейти на машинный код RCA 1802 по адресу nnn. Эта инструкция была только
             // в самой первой реализации CHIP-8. В более поздних реализациях и эмуляторах не используется.
             break;
-        case 0x1: // 1nnn JP nnn Перейти по адресу nnn
+        case 0x1:
+            // 1nnn JP nnn Перейти по адресу nnn
             asmTextString.append(QString("JP 0x%1 \t ; Jump to 0x%1 address").arg( NNN,0,16 ));
+            PC = NNN;
             break;
         case 0x2: // CALL nnn Вызов подпрограммы по адресу nnn
             asmTextString.append(QString("CALL 0x%1 \t ; Call sub-routine from 0x%1 address").arg( NNN,0,16 ));
