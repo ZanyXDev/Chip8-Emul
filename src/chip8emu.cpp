@@ -51,7 +51,8 @@ void Chip8Emu::executeNextOpcode()
         unsigned short KK  = (opCode & 0x00FF);
         unsigned short NNN = (opCode & 0x0FFF);
 
-        switch  ( HI ) {
+        switch  ( HI )
+        {
         case 0x0:
             if ( KK == 0xE0 )
             {
@@ -74,10 +75,14 @@ void Chip8Emu::executeNextOpcode()
                 moveDown( LO );
             }
 
-            if ( X == 0xF ) {
-                switch ( Y ){
-                case 0xB: // SCR Прокрутить изображение на экране на 4 пикселя вправо в режиме 128x64, либо на 2 пикселя в режиме 64x32
+            if ( X == 0xF )
+            {
+                switch ( Y )
+                {
+                case 0xB:
+                    // 00FB SCR Прокрутить изображение на экране на 4 пикселя вправо в режиме 128x64, либо на 2 пикселя в режиме 64x32
                     asmTextString.append(QString("SCR ; Scroll right on 4 (or 2 ) pixels"));
+                    moveRight();
                     break;
                 case 0xC: // SCL Прокрутить изображение на экране на 4 пикселя влево в режиме 128x64, либо на 2 пикселя в режиме 64x32
                     asmTextString.append(QString("SCL ; Scroll left on 4 (or 2 ) pixels"));
