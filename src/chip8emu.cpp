@@ -317,6 +317,16 @@ quint16 Chip8Emu::getRegister(quint8 m_reg)
     return 0x0;
 }
 
+void Chip8Emu::setRegI(quint16 m_value)
+{
+    regI = m_value;
+}
+
+quint16 Chip8Emu::getRegI()
+{
+    return regI;
+}
+
 // -- Draw function
 void Chip8Emu::moveDown(quint8 m_line)
 {
