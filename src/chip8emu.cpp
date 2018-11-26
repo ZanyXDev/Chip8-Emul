@@ -114,8 +114,11 @@ void Chip8Emu::executeNextOpcode()
             asmTextString.append(QString("JP 0x%1 \t ; Jump to 0x%1 address").arg( NNN,0,16 ));
             PC = NNN;
             break;
-        case 0x2: // CALL nnn Вызов подпрограммы по адресу nnn
+        case 0x2:
+            // 2nnn CALL nnn Вызов подпрограммы по адресу nnn
             asmTextString.append(QString("CALL 0x%1 \t ; Call sub-routine from 0x%1 address").arg( NNN,0,16 ));
+            m_stack.push_front( PC );
+            PC = NNN;
             break;
         case 0x3: // 3xkk SE Vx, kk Пропустить следующую инструкцию, если регистр Vx = kk
             asmTextString.append(QString("SE V%1, 0x%2 \t ; Skip next instruction if V%1 = 0x%2").arg( X, 0, 16 ).arg( KK,0,16 ));
