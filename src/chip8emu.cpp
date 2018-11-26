@@ -64,11 +64,14 @@ void Chip8Emu::executeNextOpcode()
             {
                 // * 00EE RET   Возвратиться из подпрограммы
                 asmTextString.append(QString("RET \t ; Return sub-routine"));
+                PC = m_stack.takeFirst();
             }
 
-            //-------------------- Инструкции Super CHIP ----------------------------------------------
-            if ( X == 0xC) { // 00Cn SCD n Прокрутить изображение на экране на n строк вниз
+            if ( X == 0xC)
+            {
+                // 00Cn SCD n Прокрутить изображение на экране на n строк вниз
                 asmTextString.append(QString("SCD 0x%1 \t ; Scroll down %1 lines").arg(LO,0,16));
+                moveDown( LO );
             }
 
             if ( X == 0xF ) {
