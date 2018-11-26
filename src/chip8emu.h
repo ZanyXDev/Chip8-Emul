@@ -36,6 +36,7 @@ signals:
 public slots:
     void loadData2Memory(QByteArray &data);
     void startEmulation();
+    void stepEmulation();
     void stopEmulation();   
     void changeKeyState(quint8 key, bool state);
 
