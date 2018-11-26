@@ -84,8 +84,10 @@ void Chip8Emu::executeNextOpcode()
                     asmTextString.append(QString("SCR ; Scroll right on 4 (or 2 ) pixels"));
                     moveRight();
                     break;
-                case 0xC: // SCL Прокрутить изображение на экране на 4 пикселя влево в режиме 128x64, либо на 2 пикселя в режиме 64x32
+                case 0xC:
+                    // 00FC SCL Прокрутить изображение на экране на 4 пикселя влево в режиме 128x64, либо на 2 пикселя в режиме 64x32
                     asmTextString.append(QString("SCL ; Scroll left on 4 (or 2 ) pixels"));
+                    moveLeft();
                     break;
                 case 0xD: // EXIT Завершить программу
                     asmTextString.append(QString("EXIT ; Shutdown programm"));
