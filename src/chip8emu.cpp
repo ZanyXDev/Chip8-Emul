@@ -135,13 +135,15 @@ void Chip8Emu::executeNextOpcode()
             }
             break;
         case 0x5: // 5xy0 SE Vx, Vy Пропустить следующую инструкцию, если Vx = Vy
-            if ( LO == 0x0){
+            if ( LO == 0x0)
+            {
                 asmTextString.append(QString("SE V%1, V%2 \t ; Skip next instruction if V%1 = V%2").arg( X,0,16 ).arg( Y,0,16 ));
                 if ( getRegister( X ) == getRegister( Y ))
                 {
                     PC+=2;
                 }
-            }else {
+            }else
+            {
                 asmTextString.append( QString("opCode 0x%1 is invalid").arg( opCode, 0, 16 ));
             }
             break;
@@ -154,53 +156,98 @@ void Chip8Emu::executeNextOpcode()
             setRegister( X, getRegister( X ) + KK );
             break;
         case 0x8:
-            switch ( LO ){
-            case 0x0: // 8xy0 LD Vx, Vy Установить Vx = Vy
+            switch ( LO )
+            {
+            case 0x0:
+                // 8xy0 LD Vx, Vy Установить Vx = Vy
                 asmTextString.append(QString("LD V%1, V%2 \t ; Set register V%1 = V%2").arg( X,0,16 ).arg( Y, 0, 16 ));
                 setRegister( X, getRegister( Y ) );
                 break;
-            case 0x1: // 8xy1 OR Vx, Vy Выполнить операцию дизъюнкция (логическое “ИЛИ”) над значениями регистров Vx и Vy,
-                // результат сохранить в Vx. Т.е. Vx = Vx | Vy
+            case 0x1:
+                /**
+                 * 8xy1 OR Vx, Vy Выполнить операцию дизъюнкция (логическое “ИЛИ”) над значениями регистров Vx и Vy,
+                 * результат сохранить в Vx. Т.е. Vx = Vx | Vy
+                 **/
                 asmTextString.append(QString("OR V%1, V%2 \t ; Set register V%1 = V%1 | V%2").arg( X,0,16 ).arg( Y, 0, 16 ));
                 setRegister( X, ( getRegister( X ) | getRegister( Y ) ) );
                 break;
-            case 0x2: // 8xy2 AND Vx, Vy Выполнить операцию конъюнкция (логическое “И”) над значениями регистров Vx и Vy,
-                // результат сохранить в Vx. Т.е. Vx = Vx & Vy
+            case 0x2:
+                /**
+                 * 8xy2 AND Vx, Vy Выполнить операцию конъюнкция (логическое “И”) над значениями регистров Vx и Vy,
+                 * результат сохранить в Vx. Т.е. Vx = Vx & Vy
+                 **/
                 asmTextString.append(QString("OR V%1, V%2 \t ; Set register V%1 = V%1 & V%2").arg( X,0,16 ).arg( Y, 0, 16 ));
                 setRegister( X, ( getRegister( X ) & getRegister( Y ) ) );
                 break;
-            case 0x3: // 8xy3 XOR Vx, Vy Выполнить операцию “исключающее ИЛИ” над значениями регистров Vx и Vy,
-                // результат сохранить в Vx. Т.е. Vx = Vx ^ Vy
+            case 0x3:
+                /**
+                 * 8xy3 XOR Vx, Vy Выполнить операцию “исключающее ИЛИ” над значениями регистров Vx и Vy,
+                 * результат сохранить в Vx. Т.е. Vx = Vx ^ Vy
+                 **/
                 asmTextString.append(QString("XOR V%1, V%2 \t ; Set register V%1 = V%1 ^ V%2").arg( X,0,16 ).arg( Y, 0, 16 ));
                 setRegister( X, ( getRegister( X ) ^ getRegister( Y ) ) );
                 break;
-            case 0x4: // 8xy4 ADD Vx, Vy Значения Vx и Vy суммируются. Если результат больше, чем 8 бит (т.е.> 255)
-                // VF устанавливается в 1, иначе 0. Только младшие 8 бит результата сохраняются в Vx. Т.е. Vx = Vx + Vy
+            case 0x4:
+                /**
+                 * 8xy4 ADD Vx, Vy Значения Vx и Vy суммируются. Если результат больше, чем 8 бит (т.е.> 255)
+                 * VF устанавливается в 1, иначе 0. Только младшие 8 бит результата сохраняются в Vx. Т.е. Vx = Vx + Vy
+                 **/
                 asmTextString.append(QString("ADD V%1, V%2 \t ; Set register V%1 = V%1 + V%2").arg( X,0,16 ).arg( Y, 0, 16 ));
-
+                setRegister( X, getSumCF( X ,Y ) );
                 break;
             case 0x5: // 8xy5 SUB Vx, Vy Если Vx >= Vy, то VF устанавливается в 1, иначе 0. Затем Vy вычитается из Vx,
                 // а результат сохраняется в Vx. Т.е. Vx = Vx - Vy
                 asmTextString.append(QString("SUB V%1, V%2 \t ; Set register V%1 = V%1 - V%2").arg( X,0,16 ).arg( Y, 0, 16 ));
+                if ( getRegister( X ) >= getRegister( Y ) )
+                {
+                    setRegister( REG_VF ,0x1);
+                }
+                else
+                {
+                    setRegister( REG_VF ,0x0);
+                }
+                setRegister( X, getRegister( X ) - getRegister( Y ) );
                 break;
-            case 0x6: // 8xy6 SHR Vx {, Vy} Операция сдвига вправо на 1 бит. Сдвигается регистр Vx. Т.е. Vx = Vx >> 1.
-                // До операции сдвига выполняется следующее: если младший бит (самый правый) регистра Vx равен 1, то VF = 1, иначе VF = 0
+            case 0x6:
+                /** 8xy6 SHR Vx {, Vy} Операция сдвига вправо на 1 бит. Сдвигается регистр Vx. Т.е. Vx = Vx >> 1.
+                 *  До операции сдвига выполняется следующее: если младший бит (самый правый) регистра Vx равен 1, то VF = 1, иначе VF = 0
+                 **/
                 asmTextString.append(QString("SHR V%1 {, V%2} \t ; Set register V%1 = V%1 >> 1 ").arg(X,0,16 ).arg( Y, 0, 16 ));
+                setRegister(REG_VF, ( ( getRegister( X ) >> 7) & 0x1) ) ;
+                setRegister( X, ( getRegister( X ) >> 1 ) );
                 break;
-            case 0x7: // 8xy7 SUBN Vx, Vy Если Vy >= Vx, то VF устанавливается в 1, иначе 0. Тогда Vx вычитается из Vy,
-                // и результат сохраняется в Vx. Т.е. Vx = Vy - Vx
-                asmTextString.append(QString("SUBN V%1, V%2 \t ; IF V%2 > V%1 { SET VF = 1} ELSE { SET VF = 0, set register V%1 = V%2 - V%1 } ").arg( X,0,16 ).arg( Y, 0, 16 ));
+            case 0x7:
+                /**
+                 * 8xy7 SUBN Vx, Vy Если Vy >= Vx, то VF устанавливается в 1, иначе 0. Тогда Vx вычитается из Vy,
+                 * и результат сохраняется в Vx. Т.е. Vx = Vy - Vx
+                 **/
+                asmTextString.append(QString("SUBN V%1, V%2 \t ; IF V%2 > V%1 { SET VF = 1} ELSE { SET VF = 0 } set register V%1 = V%2 - V%1 } ").arg( X,0,16 ).arg( Y, 0, 16 ));
+                if ( getRegister( Y ) >= getRegister( X ) )
+                {
+                    setRegister( REG_VF ,0x1);
+                }
+                else
+                {
+                    setRegister( REG_VF ,0x0);
+                }
+                setRegister( X, getRegister( Y ) - getRegister( X ) );
                 break;
-            case 0xE: // 8xyE SHL Vx {, Vy} Операция сдвига влево на 1 бит. Сдвигается регистр Vx. Т.е. Vx = Vx << 1.
-                // До операции сдвига выполняется следующее: если младший бит (самый правый) регистра Vx равен 1, то VF = 1, иначе VF = 0
+            case 0xE:
+                /**
+                 * 8xyE SHL Vx {, Vy} Операция сдвига влево на 1 бит. Сдвигается регистр Vx. Т.е. Vx = Vx << 1.
+                 *  До операции сдвига выполняется следующее: если младший бит (самый правый) регистра Vx равен 1, то VF = 1, иначе VF = 0
+                 **/
                 asmTextString.append(QString("SHL V%1 {, V%2} \t ; Set register V%1 = V%1 << 1 ").arg( X,0,16 ).arg( Y, 0, 16 ));
+                setRegister(REG_VF, ( ( getRegister( X ) >> 7) & 0x1) ) ;
+                setRegister( X, ( getRegister( X ) << 1 ) );
                 break;
             default:
                 break;
             }
             break;
         case 0x9: // 9xy0 SNE Vx, Vy Пропустить следующую инструкцию, если Vx != Vy
-            if ( LO == 0x0) {
+            if ( LO == 0x0)
+            {
                 asmTextString.append(QString("SNE V%1, V%2 \t ; Skip next instruction if V%1 != V%2").arg( X,0,16 ).arg( Y, 0, 16));
                 if (getRegister( X) != getRegister( Y ))
                 {
@@ -210,11 +257,15 @@ void Chip8Emu::executeNextOpcode()
                 asmTextString.append( QString("opCode 0x%1 is invalid").arg( opCode, 0, 16 ));
             }
             break;
-        case 0xA: // Annn LD I, nnn Значение регистра I устанавливается в nnn
+        case 0xA:
+            // Annn LD I, nnn Значение регистра I устанавливается в nnn
             asmTextString.append(QString("LD I, 0x%1 \t ; set register I to 0x%1").arg( NNN,0,16 ));
+            setRegI( NNN );
             break;
-        case 0xB:// Bnnn JP V0, nnn Перейти по адресу nnn + значение в регистре V0.
+        case 0xB:
+            // Bnnn JP V0, nnn Перейти по адресу nnn + значение в регистре V0.
             asmTextString.append(QString("JP V0, 0x%1 \t ; Jump to address V0 + %1").arg( NNN,0,16 ));
+            PC = getRegister( 0 ) + NNN;
             break;
         case 0xC: //Cxkk RND Vx, kk Устанавливается Vx = (случайное число от 0 до 255) & kk
             asmTextString.append(QString("RND V%1, 0x%2 \t ; Set register V%1 = random {0,255} & 0x%2 ").arg( X,0,16 ).arg( KK,0,16 ));
@@ -226,10 +277,8 @@ void Chip8Emu::executeNextOpcode()
                     * уже есть нарисованные пиксели - они стираются, если их нет - рисуются. Если хоть один пиксель был стерт,
                     * то VF устанавливается в 1, иначе в 0.
                     **/
-#ifdef DEBUG
-            drawSprite(5,5,9);
-#endif
             asmTextString.append(QString("DRW V%1, 0x%2, 0x%3 \t ; Draw sprite (0x%3 bytes) in the pos( 0x%1, 0x%2 ) ").arg( X,0,16 ).arg( Y,0,16 ).arg( LO,0,16 ));
+            drawSprite( getRegister( X ), getRegister ( Y ), LO);
             break;
         case 0xE:
             if ( KK == 0x9E){ // Ex9E SKP Vx Пропустить следующую команду если клавиша, номер которой хранится в регистре Vx, нажата
@@ -270,8 +319,10 @@ void Chip8Emu::executeNextOpcode()
                 asmTextString.append(QString("LD ST, V%1 \t ; Set register SOUND_TIMER = V%1 ").arg( X,0,16 ) );
                 sound_timer = getRegister( X );
                 break;
-            case 0x1E: // Fx1E ADD I, Vx Сложить значения регистров I и Vx, результат сохранить в I. Т.е. I = I + Vx
+            case 0x1E:
+                // Fx1E ADD I, Vx Сложить значения регистров I и Vx, результат сохранить в I. Т.е. I = I + Vx
                 asmTextString.append(QString("ADD I, V%1 \t ; Set register I = I + V%1 ").arg( X,0,16 ) );
+                setRegI( getRegI() + getRegister( X ) );
                 break;
             case 0x29: // Fx29 LD F, Vx Используется для вывода на экран символов встроенного шрифта размером 4x5 пикселей.
                 // Команда загружает в регистр I адрес спрайта, значение которого находится в Vx.
