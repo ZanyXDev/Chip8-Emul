@@ -12,6 +12,7 @@
 #define LAPS_TYPE_1 10
 #define LAPS_TYPE_2 30
 #define KEY_PAD 16
+#define REG_VF 16
 
 #define REFRESH_TIME 1000 / 60
 
