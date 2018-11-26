@@ -336,33 +336,31 @@ void Chip8Emu::moveLeft()
 
 void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
 {
-    bool showPixel;
-    unsigned short maxLine;
-    unsigned short drw;
-    unsigned short idx ;
+    bool newPixel;
+    bool existPixel;
+    quint8 maxLine;
+    quint16 drw;
+    quint16 idx ;
 
-    if ( 0 == n)
-    { // check how many rows draw
-        maxLine = 16;
-    }else
-    {
-        maxLine = n;
-    }
 
+    // логическое выражение ? выражение 1 : выражение 2
+    maxLine = ( 0 == n ) ? 16 : n ; // check how many rows draw.
+    maxLine = ( n > 16 ) ? 16 : n ; // check upper border for draw line.
     for (int row = 0; row < maxLine; ++row)
     {
         drw = m_memory.at(regI+row);
         for (int col = 0; col < 8; ++col)
         {
-            showPixel = drw  & (1 << (7 - col));
             idx = (vx + col) + ((vy + row) * DISPLAY_X);
+            newPixel = drw  & (1 << (7 - col));
+            existPixel = m_screen.testBit( idx);
 
-            if ( m_screen.testBit( idx ) && !showPixel)
+            if ( existPixel )
             {
-
+                setRegister( REG_VF, 0x1);
             }
 
-            m_screen.setBit( idx, showPixel);
+            m_screen.setBit( idx, (existPixel ^ newPixel) );
         }
     }
 }
