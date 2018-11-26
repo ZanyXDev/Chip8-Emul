@@ -299,8 +299,6 @@ void Chip8Emu::decreaseTimers()
     }
 }
 
-
-
 void Chip8Emu::setRegister(quint8 m_reg, quint8 m_value)
 {
     if (m_reg < 16)
@@ -356,12 +354,13 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
 void Chip8Emu::initDevice()
 {
     PC = START_ADDR;               // set mem offset counter
-    regI = START_ADDR;
+    regI = 0;
     delay_timer = 0;               // clear delay timer;
     sound_timer = 0;               // clear sound timer;
     opcode_count = 0 ;
     m_memory.fill(0x0,RAM_SIZE);   // clear 4k ram memory
     m_regs.fill(0x0,16);
+    m_stack.fill(0x0,16);
     m_screen.fill(false, DISPLAY_X * DISPLAY_Y);
     m_keys.fill(false, KEY_PAD);   // All keys unPressed
     m_ExtendedMode = false;
