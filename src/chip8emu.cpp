@@ -439,7 +439,19 @@ void Chip8Emu::execute()
     }
 }
 
-
+quint8 Chip8Emu::getSumCF( quint8 x, quint8 y)
+{
+    quint16 val = x + y;
+    if (val > 255)
+    {
+        m_regs[REG_VF] = 0x1 ;
+    }
+    else
+    {
+        m_regs[REG_VF] = 0x1 ;
+    }
+    return (val & 0x00FF);
+}
 
 
 
