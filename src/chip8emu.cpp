@@ -29,6 +29,7 @@ void Chip8Emu::startEmulation()
 void Chip8Emu::stepEmulation()
 {
     this->execute();
+    emit updateScreen(m_screen);
 }
 
 void Chip8Emu::stopEmulation()
