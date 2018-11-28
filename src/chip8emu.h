@@ -92,9 +92,16 @@ private:
     /**
      * @brief saveRegToMemory
      * @param m_reg_val
-     * @note opCode Fx55 LD [I], Vx Save registers {V0, V%1} in memory, start address = register I
+     * @note opCode Fx55 LD [I], Vx; Save registers {V0, V%1} in memory, start address = register I
      */
     void saveRegToMemory (quint8 m_reg_val);
+
+    /**
+     * @brief loadRegFromMemory
+     * @param m_reg_val
+     * @note // Fx65 LD Vx, [I] ; Load registers {V0, V%1} from memory, start address = register I
+     */
+    void loadRegFromMemory(quint8 m_reg_val);
 
     QTimer m_timer;
     QByteArray m_memory;    // 4k ram memory

@@ -367,6 +367,7 @@ void Chip8Emu::executeNextOpcode()
             break;
         case 0x65: // Fx65 LD Vx, [I] Загрузить значения регистров от V0 до Vx из памяти, начиная с адреса находящегося в I
             asmTextString.append(QString("LD V%1, [I] \t ; Load registers {V0, V%1} from memory, start address = register I ").arg( X,0,16 ) );
+            loadRegFromMemory( X );
             break;
         case 0x75: //Fx75 LD R, Vx Сохранить регистры V0 - Vx в пользовательских флагах [RPL](http://en.wikipedia.org/wiki/RPL_(programming_language))
             asmTextString.append(QString("LD R, V%1 \t ; Save registers {V0, V%1} in the users flag  [RPL](http://en.wikipedia.org/wiki/RPL_(programming_language)").arg( X,0,16 ) );
@@ -590,6 +591,18 @@ void Chip8Emu::saveRegToMemory(quint8 m_reg_val)
         for (int i=0; i<=m_reg_val; ++i)
         {
             m_memory[idx + i] = getRegister( i );
+        }
+    }
+}
+
+void Chip8Emu::loadRegFromMemory(quint8 m_reg_val)
+{
+    if (m_reg_val <= REG_VF)
+    {
+        quint8 idx = getRegI();
+        for (int i=0; i<=m_reg_val; ++i)
+        {
+            setRegister(i, m_memory.at(idx + i) );
         }
     }
 }
