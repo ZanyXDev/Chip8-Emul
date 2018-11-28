@@ -263,7 +263,7 @@ void Chip8Emu::executeNextOpcode()
         break;
     case 0xA:
         // Annn LD I, nnn Значение регистра I устанавливается в nnn
-        asmTextString.append(QString("LD I, 0x%1 \t ; set register I to 0x%1").arg( NNN,0,16 ));
+        asmTextString.append(QString("%1\tLD I, 0x%2 \t ; set register I to 0x%2").arg( opCode,0,16 ).arg( NNN,0,16 ));
         setRegI( NNN );
         break;
     case 0xB:

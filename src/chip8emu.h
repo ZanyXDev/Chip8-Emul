@@ -44,7 +44,7 @@ private slots:
     void execute();
 private:
     void initDevice();
-    void executeNextOpcode(int newParameter = 5);
+    void executeNextOpcode();
     void decreaseTimers();
 
     void setRegister(quint8 m_reg, quint8 m_value);
