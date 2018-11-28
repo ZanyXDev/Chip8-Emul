@@ -14,6 +14,10 @@
 #define KEY_PAD 16
 #define REG_VF 16
 
+#define SMALL_FONT_SIZE 5
+#define BIG_FONT_SIZE 10
+#define BIG_FONT_OFFSET 80
+
 #define REFRESH_TIME 1000 / 60
 
 /**
