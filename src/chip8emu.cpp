@@ -363,6 +363,7 @@ void Chip8Emu::executeNextOpcode()
             break;
         case 0x55: // Fx55 LD [I], Vx Сохранить значения регистров от V0 до Vx в памяти, начиная с адреса находящегося в I
             asmTextString.append(QString("LD [I], V%1 \t ; Save registers {V0, V%1} in memory, start address = register I ").arg( X,0,16 ) );
+            saveRegToMemory( X );
             break;
         case 0x65: // Fx65 LD Vx, [I] Загрузить значения регистров от V0 до Vx из памяти, начиная с адреса находящегося в I
             asmTextString.append(QString("LD V%1, [I] \t ; Load registers {V0, V%1} from memory, start address = register I ").arg( X,0,16 ) );
@@ -579,6 +580,18 @@ void Chip8Emu::saveBCDRegToI(quint8 m_reg_val)
 
     m_memory[val_i] = m_reg_val;
 
+}
+
+void Chip8Emu::saveRegToMemory(quint8 m_reg_val)
+{
+    if (m_reg_val <= REG_VF)
+    {
+        quint8 idx = getRegI();
+        for (int i=0; i<=m_reg_val; ++i)
+        {
+            m_memory[idx + i] = getRegister( i );
+        }
+    }
 }
 
 quint8 Chip8Emu::getRealKey (quint8 m_emu_key)

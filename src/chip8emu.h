@@ -89,6 +89,13 @@ private:
      */
     void saveBCDRegToI(quint8 m_reg_val);
 
+    /**
+     * @brief saveRegToMemory
+     * @param m_reg_val
+     * @note opCode Fx55 LD [I], Vx Save registers {V0, V%1} in memory, start address = register I
+     */
+    void saveRegToMemory (quint8 m_reg_val);
+
     QTimer m_timer;
     QByteArray m_memory;    // 4k ram memory
     QByteArray m_regs;      // 16 registers 8bit size;
