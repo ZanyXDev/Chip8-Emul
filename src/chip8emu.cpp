@@ -289,7 +289,7 @@ void Chip8Emu::executeNextOpcode()
         {
             // Ex9E SKP Vx Пропустить следующую команду если клавиша, номер которой хранится в регистре Vx, нажата
             asmTextString.append(QString("SKP V%1 \t ; Skip next instruction if key number (save register V%1) pressed ").arg( X,0,16 ) );
-            qDebug() << "SKP V" << getRegister( X ) << " ; Skip next instruction if key number (save register V" << getRegister( X )<< ") pressed";
+            //qDebug() << "SKP V" << getRegister( X ) << " ; Skip next instruction if key number (save register V" << getRegister( X )<< ") pressed";
             if (m_keys.at( getRealKey ( getRegister( X ) )))
             {
                 PC+=2;
@@ -299,7 +299,7 @@ void Chip8Emu::executeNextOpcode()
         {
             // ExA1 SKNP Vx Пропустить следующую команду если клавиша, номер которой хранится в регистре Vx, не нажата
             asmTextString.append(QString("SKNP V%1 \t ; Skip next instruction if key number (save register V%1) not pressed ").arg( X,0,16 ) );
-            qDebug() << "SKNP V" << getRegister( X ) << " ; Skip next instruction if key number (save register V" << getRegister( X )<< ") not pressed";
+            //qDebug() << "SKNP V" << getRegister( X ) << " ; Skip next instruction if key number (save register V" << getRegister( X )<< ") not pressed";
             if (!m_keys.at( getRealKey ( getRegister( X ) )))
             {
                 PC+=2;
@@ -358,6 +358,7 @@ void Chip8Emu::executeNextOpcode()
             break;
         case 0x33: // Fx33 LD B, Vx Сохранить значение регистра Vx в двоично-десятичном (BCD) представлении по адресам I, I+1 и I+2
             asmTextString.append(QString("LD B, V%1 \t ; Save register V%1 in memory {binary-decimal presentation},  address register I, I+1, I+2 ").arg( X,0,16 ) );
+            saveBCDRegToI( getRegister ( X ) );
             break;
         case 0x55: // Fx55 LD [I], Vx Сохранить значения регистров от V0 до Vx в памяти, начиная с адреса находящегося в I
             asmTextString.append(QString("LD [I], V%1 \t ; Save registers {V0, V%1} in memory, start address = register I ").arg( X,0,16 ) );
@@ -562,6 +563,23 @@ quint8 Chip8Emu::getSumCF( quint8 x, quint8 y)
     return (val & 0x00FF);
 }
 
+void Chip8Emu::saveBCDRegToI(quint8 m_reg_val)
+{    
+    quint16 val_i   = getRegI();
+    qDebug() <<"REG value:" <<m_reg_val<< " REG_I:" << val_i;
+
+    m_memory[val_i] = (m_reg_val - (m_reg_val % 100)) / 100;
+    m_reg_val -= m_memory.at(val_i) * 100;
+    ++val_i;
+
+    m_memory[val_i] = (m_reg_val - (m_reg_val % 10)) / 10;
+    m_reg_val -= m_memory.at(val_i) * 10;
+    ++val_i;
+
+    m_memory[val_i] = m_reg_val;
+
+}
+
 quint8 Chip8Emu::getRealKey (quint8 m_emu_key)
 {
     /**   Real           Emu        ScanCode
@@ -575,6 +593,7 @@ quint8 Chip8Emu::getRealKey (quint8 m_emu_key)
     * |A|0|B|F|   | |Z|X|C|V|   | |10|0|11|15|
     * +-+-+-+-+   | +-+-+-+-+   | +-+-+-+-+
     **/
+
     quint8 value;
     switch (m_emu_key)
     {
@@ -598,7 +617,7 @@ quint8 Chip8Emu::getRealKey (quint8 m_emu_key)
         value = 0; break;
         break;
     }
-    qDebug() << "Real key code:" << value;
+    //qDebug() << "Real key code:" << value;
     return value;
 }
 

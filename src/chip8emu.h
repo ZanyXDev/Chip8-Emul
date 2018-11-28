@@ -44,7 +44,7 @@ private slots:
     void execute();
 private:
     void initDevice();
-    void executeNextOpcode();
+    void executeNextOpcode(int newParameter = 5);
     void decreaseTimers();
 
     void setRegister(quint8 m_reg, quint8 m_value);
@@ -82,6 +82,12 @@ private:
      * @return quint8 sum
      */
     quint8 getSumCF( quint8 x, quint8 y ) ;
+    /**
+     * @brief Save register Vx in memory {binary-decimal presentation},  address register I, I+1, I+2
+     * @param m_reg_val Value from register Vx
+     * @note
+     */
+    void saveBCDRegToI(quint8 m_reg_val);
 
     QTimer m_timer;
     QByteArray m_memory;    // 4k ram memory
