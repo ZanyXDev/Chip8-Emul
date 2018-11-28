@@ -71,6 +71,7 @@ void Chip8Emu::executeNextOpcode()
             // * 00EE RET   Возвратиться из подпрограммы
             asmTextString.append(QString("RET \t ; Return sub-routine"));
             PC = m_stack.takeFirst();
+            PC-=2; // correct call and jump pointer
         }
 
         if ( X == 0xC)
@@ -118,12 +119,14 @@ void Chip8Emu::executeNextOpcode()
         // 1nnn JP nnn Перейти по адресу nnn
         asmTextString.append(QString("JP 0x%1 \t ; Jump to 0x%1 address").arg( NNN,0,16 ));
         PC = NNN;
+        PC-=2; // correct call and jump pointer
         break;
     case 0x2:
         // 2nnn CALL nnn Вызов подпрограммы по адресу nnn
         asmTextString.append(QString("CALL 0x%1 \t ; Call sub-routine from 0x%1 address").arg( NNN,0,16 ));
         m_stack.push_front( PC );
         PC = NNN;
+        PC-=2; // correct call and jump pointer
         break;
     case 0x3: // 3xkk SE Vx, kk Пропустить следующую инструкцию, если регистр Vx = kk
         asmTextString.append(QString("SE V%1, 0x%2 \t ; Skip next instruction if V%1 = 0x%2").arg( X, 0, 16 ).arg( KK,0,16 ));
@@ -264,7 +267,7 @@ void Chip8Emu::executeNextOpcode()
         break;
     case 0xA:
         // Annn LD I, nnn Значение регистра I устанавливается в nnn
-        asmTextString.append(QString("%1\tLD I, 0x%2 \t ; set register I to 0x%2").arg( opCode,0,16 ).arg( NNN,0,16 ));
+        asmTextString.append(QString("LD I, 0x%1 \t ; set register I to 0x%1").arg( NNN,0,16 ));
         setRegI( NNN );
         break;
     case 0xB:
@@ -282,7 +285,7 @@ void Chip8Emu::executeNextOpcode()
                     * уже есть нарисованные пиксели - они стираются, если их нет - рисуются. Если хоть один пиксель был стерт,
                     * то VF устанавливается в 1, иначе в 0.
                     **/
-        asmTextString.append(QString("DRW V%1, V%2, 0x%3 \t ; Draw sprite (0x%3 bytes) in the pos( 0x%1, 0x%2 ) ").arg( X,0,16 ).arg( Y,0,16 ).arg( LO,0,16 ));
+        asmTextString.append(QString("DRW 0x%1, 0x%2, 0x%3 \t ; Draw sprite (0x%3 bytes) in the pos( 0x%1, 0x%2 ) ").arg( X,0,16 ).arg( Y,0,16 ).arg( LO,0,16 ));
         drawSprite( getRegister( X ), getRegister ( Y ), LO);
         break;
     case 0xE:
@@ -451,6 +454,7 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
     quint8 drw;
     quint16 idx ;
 
+    qDebug() << "X:" << vx << " Y:"<< vy << " N:"<<n;
 
     // логическое выражение ? выражение 1 : выражение 2
     maxLine = ( 0 == n ) ? 16 : n ; // check how many rows draw.
@@ -460,7 +464,7 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
         drw = m_memory.at(regI+row);
         for (int col = 0; col < 8; ++col)
         {
-            idx = (vx + col) + ((vy + row) * DISPLAY_X);
+            idx = (vx + col) + ((vy + row) * DISPLAY_X);           
             newPixel = drw  & (1 << (7 - col));
             existPixel = m_screen.testBit( idx);
 
