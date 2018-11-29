@@ -70,8 +70,7 @@ void Chip8Emu::executeNextOpcode()
         {
             // * 00EE RET   Возвратиться из подпрограммы
             asmTextString.append(QString("RET \t ; Return sub-routine"));
-            PC = m_stack.takeFirst();
-            PC-=2; // correct call and jump pointer
+            PC = m_stack.takeFirst();            
         }
 
         if ( X == 0xC)
@@ -285,7 +284,7 @@ void Chip8Emu::executeNextOpcode()
                     * уже есть нарисованные пиксели - они стираются, если их нет - рисуются. Если хоть один пиксель был стерт,
                     * то VF устанавливается в 1, иначе в 0.
                     **/
-        asmTextString.append(QString("DRW 0x%1, 0x%2, 0x%3 \t ; Draw sprite (0x%3 bytes) in the pos( 0x%1, 0x%2 ) ").arg( X,0,16 ).arg( Y,0,16 ).arg( LO,0,16 ));
+        asmTextString.append(QString("DRW V%1, V%2, 0x%3 \t ; Draw sprite (0x%3 bytes) in the pos saved V%1, V%2 ").arg( X,0,16 ).arg( Y,0,16 ).arg( LO,0,16 ));
         drawSprite( getRegister( X ), getRegister ( Y ), LO);
         break;
     case 0xE:
@@ -387,10 +386,10 @@ void Chip8Emu::executeNextOpcode()
         break;
     }
 
+    qDebug() << QString("0x%1: %2").arg(PC,0,16).arg(asmTextString);
     emit showDecodeOpCode ( QString("0x%1:\t%2\t%3").arg(PC,0,16).arg(opCode,0,16).arg(asmTextString) );
 
     PC+=2;
-
     return;
 }
 
@@ -454,7 +453,7 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
     quint8 drw;
     quint16 idx ;
 
-    qDebug() << "X:" << vx << " Y:"<< vy << " N:"<<n;
+    //qDebug() << "X:" << vx << " Y:"<< vy << " N:"<<n;
 
     // логическое выражение ? выражение 1 : выражение 2
     maxLine = ( 0 == n ) ? 16 : n ; // check how many rows draw.
@@ -464,9 +463,11 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
         drw = m_memory.at(regI+row);
         for (int col = 0; col < 8; ++col)
         {
-            idx = (vx + col) + ((vy + row) * DISPLAY_X);           
+            idx = (vx + col) + ((vy + row) * DISPLAY_X);
+            qDebug() <<"m_screen.size():"<<m_screen.size() << " idx:" << idx;
+
             newPixel = drw  & (1 << (7 - col));
-            existPixel = m_screen.testBit( idx);
+            existPixel = m_screen.testBit( idx );
 
             if ( existPixel )
             {
@@ -487,7 +488,7 @@ void Chip8Emu::initDevice()
     opcode_count = 0 ;
     m_memory.fill(0x0,RAM_SIZE);   // clear 4k ram memory
     m_regs.fill(0x0,16);
-    m_stack.fill(0x0,16);
+    m_stack.clear();
     m_screen.fill(false, DISPLAY_X * DISPLAY_Y);
     m_keys.fill(false, KEY_PAD);   // All keys unPressed
     m_ExtendedMode = false;
