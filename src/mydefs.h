@@ -6,6 +6,7 @@
 
 #define DISPLAY_X 64
 #define DISPLAY_Y 32
+#define MAX_DISPLAY_SIZE 64*32 - 1
 
 #define DEBUG 1
 
