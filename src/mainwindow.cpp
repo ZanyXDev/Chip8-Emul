@@ -162,17 +162,46 @@ void MainWindow::createConnection()
 {
     connect(newGameAct, &QAction::triggered, this, &MainWindow::startGame);
     connect(startGameBtn,&QPushButton::clicked,m_emul,&Chip8Emu::startEmulation);
+    connect(nextStepBtn,&QPushButton::clicked,m_emul,&Chip8Emu::stepEmulation);
     connect(stopGameBtn,&QPushButton::clicked,m_emul,&Chip8Emu::stopEmulation);
 
     connect(this,&MainWindow::fileLoaded,m_emul,&Chip8Emu::loadData2Memory);
     connect(m_emul,&Chip8Emu::ReadyToWork,this,&MainWindow::readyToWork);
     connect(m_emul,&Chip8Emu::updateScreen,m_screen,&Screen::updateScreen);
     connect(m_emul,&Chip8Emu::showDecodeOpCode,textListing,&QTextEdit::append);
+    connect(this,&MainWindow::changeKeyState,m_emul,&Chip8Emu::changeKeyState);
+
 
 #ifdef DEBUG
     connect(m_emul,&Chip8Emu::showTime,CTime_label,&QLabel::setText);
 #endif
 
+}
+
+quint8 MainWindow::mapKey(int mkey)
+{
+    quint8 m_key;
+    switch ( mkey )
+    {
+    case Qt::Key_1: m_key = 0;  break;
+    case Qt::Key_2: m_key = 1;  break;
+    case Qt::Key_3: m_key = 2;  break;
+    case Qt::Key_4: m_key = 3;  break;
+    case Qt::Key_Q: m_key = 4;  break;
+    case Qt::Key_W: m_key = 5;  break;
+    case Qt::Key_E: m_key = 6;  break;
+    case Qt::Key_R: m_key = 7;  break;
+    case Qt::Key_A: m_key = 8;  break;
+    case Qt::Key_S: m_key = 9;  break;
+    case Qt::Key_D: m_key = 10; break;
+    case Qt::Key_F: m_key = 11; break;
+    case Qt::Key_Z: m_key = 12; break;
+    case Qt::Key_X: m_key = 13; break;
+    case Qt::Key_C: m_key = 14; break;
+    case Qt::Key_V: m_key = 15; break;
+    default: break;
+    }
+    return m_key;
 }
 
 QPoint MainWindow::calcDeskTopCenter(int width,int height)
@@ -186,139 +215,14 @@ QPoint MainWindow::calcDeskTopCenter(int width,int height)
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
-{
-    /**
-        * Key mappings
-        * The original CHIP-8 keypad | This is emulated as follows
-        * +-+-+-+-+                  | +-+-+-+-+
-        * |1|2|3|C|                  | |1|2|3|4|
-        * +-+-+-+-+                  | +-+-+-+-+
-        * |4|5|6|D|                  | |Q|W|E|R|
-        * +-+-+-+-+                  | +-+-+-+-+
-        * |7|8|9|E|                  | |A|S|D|F|
-        * +-+-+-+-+                  | +-+-+-+-+
-        * |A|0|B|F|                  | |Z|X|C|V|
-        * +-+-+-+-+                  | +-+-+-+-+
-    */
-    short m_key;
-    switch (event->key()) {
-    case Qt::Key_1:
-        m_key = 0;
-        break;
-    case Qt::Key_2:
-        m_key = 1;
-        break;
-    case Qt::Key_3:
-        m_key = 2;
-        break;
-    case Qt::Key_4:
-        m_key = 3;
-        break;
-    case Qt::Key_Q:
-        m_key = 4;
-        break;
-    case Qt::Key_W:
-        m_key = 5;
-        break;
-    case Qt::Key_E:
-        m_key = 6;
-        break;
-    case Qt::Key_R:
-        m_key = 7;
-        break;
-    case Qt::Key_A:
-        m_key = 8;
-        break;
-    case Qt::Key_S:
-        m_key = 9;
-        break;
-    case Qt::Key_D:
-        m_key = 10;
-        break;
-    case Qt::Key_F:
-        m_key = 11;
-        break;
-    case Qt::Key_Z:
-        m_key = 12;
-        break;
-    case Qt::Key_X:
-        m_key = 13;
-        break;
-    case Qt::Key_C:
-        m_key = 14;
-        break;
-    case Qt::Key_V:
-        m_key = 15;
-        break;
-    default:
-        break;
-    }
-    if ( m_emul != nullptr )
-    {
-        m_emul->changeKeyState(m_key,true);
-    }
+{    
+    emit changeKeyState( mapKey( event->key() ),true );
     QMainWindow::keyPressEvent(event);
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *event)
 {
-    short m_key;
-    switch (event->key()) {
-    case Qt::Key_1:
-        m_key = 0;
-        break;
-    case Qt::Key_2:
-        m_key = 1;
-        break;
-    case Qt::Key_3:
-        m_key = 2;
-        break;
-    case Qt::Key_4:
-        m_key = 3;
-        break;
-    case Qt::Key_Q:
-        m_key = 4;
-        break;
-    case Qt::Key_W:
-        m_key = 5;
-        break;
-    case Qt::Key_E:
-        m_key = 6;
-        break;
-    case Qt::Key_R:
-        m_key = 7;
-        break;
-    case Qt::Key_A:
-        m_key = 8;
-        break;
-    case Qt::Key_S:
-        m_key = 9;
-        break;
-    case Qt::Key_D:
-        m_key = 10;
-        break;
-    case Qt::Key_F:
-        m_key = 11;
-        break;
-    case Qt::Key_Z:
-        m_key = 12;
-        break;
-    case Qt::Key_X:
-        m_key = 13;
-        break;
-    case Qt::Key_C:
-        m_key = 14;
-        break;
-    case Qt::Key_V:
-        m_key = 15;
-        break;
-    default:
-        break;
-    }
-    if ( m_emul != nullptr )
-    {
-        m_emul->changeKeyState(m_key,false);
-    }
+    emit changeKeyState( mapKey( event->key() ), false );
     QMainWindow::keyReleaseEvent(event);
 }
 
