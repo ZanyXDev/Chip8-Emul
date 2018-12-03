@@ -18,7 +18,8 @@ Screen::Screen(QWidget *parent)
 QSize Screen::sizeHint() const
 {
     QSize size = QSize(zoom * DISPLAY_X, zoom * DISPLAY_Y);
-    if (zoom >= 3) {
+    if (zoom >= 3)
+    {
         // add space for coordinate line show
         size += QSize(1, 1);
     }
@@ -26,13 +27,8 @@ QSize Screen::sizeHint() const
 }
 
 void Screen::updateScreen(QBitArray display)
-{
-    int maxSize = DISPLAY_X * DISPLAY_Y;
+{   
     m_display = display;
-
-    if (m_display.size() > maxSize){
-        m_display.truncate(maxSize);
-    }
     update();
 }
 
@@ -41,37 +37,58 @@ void Screen::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, true);
 
-    if (zoom >= 3) {
+    if (zoom >= 3)
+    {
+
         painter.setPen(lineColor);
-        for (int x = 0; x <= DISPLAY_X; ++x){
+        for (int x = 0; x < DISPLAY_X; ++x)
+        {
             painter.drawLine(zoom * x, 0, zoom * x, zoom * DISPLAY_Y);
         }
-        for (int y = 0; y <= DISPLAY_Y; ++y) {
+        for (int y = 0; y < DISPLAY_Y; ++y)
+        {
             painter.drawLine(0, zoom * y,  zoom * DISPLAY_X, zoom * y);
         }
+
     }
-    for (int x = 0; x < DISPLAY_X; ++x) {
+
+    for (int x = 0; x < DISPLAY_X; ++x)
+    {
         for (int y = 0; y < DISPLAY_Y; ++y)
+        {
             drawImagePixel(&painter, x, y);
+        }
     }
+
 }
 
 void Screen::drawImagePixel(QPainter *painter, int x, int y)
 {
     QColor color;
-    int idx = x + (y * DISPLAY_X);
 
-    if (m_display.at(idx)){
+    quint16 val = x + (y * DISPLAY_X );
+
+    quint16 idx = ( val > MAX_DISPLAY_SIZE ) ? MAX_DISPLAY_SIZE : val;
+
+    if (m_display.at(idx))
+    {
+        //@ToDO add ability change color from menu
         color = Qt::black;
-    }else{
+    }
+    else
+    {
         color = Qt::white;
     }
 
-    if (zoom >= 3) {
+    if (zoom >= 3)
+    {
         painter->fillRect(zoom * x + 1, zoom * y + 1,
                           zoom - 1, zoom - 1, color);
-    } else {
+    }
+    else
+    {
         painter->fillRect(zoom * x, zoom * y,
                           zoom, zoom, color);
     }
+
 }
