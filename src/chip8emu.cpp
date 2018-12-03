@@ -276,7 +276,7 @@ void Chip8Emu::executeNextOpcode()
         break;
     case 0xC: //Cxkk RND Vx, kk Устанавливается Vx = (случайное число от 0 до 255) & kk
         asmTextString.append(QString("RND V%1, 0x%2 \t ; Set register V%1 = random {0,255} & 0x%2 ").arg( X,0,16 ).arg( KK,0,16 ));
-        setRegister(X, QRandomGenerator::global()->bounded( 255 ));
+        setRegister(X, QRandomGenerator::global()->bounded( 256 ) & KK );
         break;
     case 0xD: /** Dxyn DRW Vx, Vy, n Нарисовать на экране спрайт. Эта инструкция считывает n байт по адресу
                     * содержащемуся в регистре I и рисует их на экране в виде спрайта c координатой Vx, Vy.
