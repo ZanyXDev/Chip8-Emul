@@ -53,10 +53,12 @@ private:
     void setRegI( quint16 m_value );
     quint16 getRegI();
 
+    quint16 getIndex(quint8 x, quint8 y);
+
     /**
      * @brief drawSprite
-     * @param vx
-     * @param vy
+     * @param vx {0,3F} [0,63]
+     * @param vy {0,1F} [0,31]
      * @param n
      * @return
      * @note реализует поведение опкода DXYN.
@@ -124,7 +126,6 @@ private:
     quint32 m_ElapsedTime;
 
     bool m_ExtendedMode;    // Chip8 (false) or SuperChip (true) mode
-
 
 };
 
