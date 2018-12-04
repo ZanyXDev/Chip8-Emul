@@ -6,6 +6,7 @@
 #include <QApplication>
 #include <QGuiApplication>
 #include <QDesktopWidget>
+#include <QDockWidget>
 
 #include <QMainWindow>
 #include <QMenu>
@@ -13,15 +14,6 @@
 #include <QStatusBar>
 #include <QToolBar>
 #include <QAction>
-
-#include <QComboBox>
-#include <QLabel>
-#include <QPushButton>
-#include <QTextEdit>
-
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGridLayout>
 
 #include <QFileDialog>
 #include <QByteArray>
@@ -67,13 +59,13 @@ private:
     QAction* newGameAct;
     QRect desktopRect;
 
-    QComboBox* gameSelector;
-    QPushButton* startGameBtn;
-    QPushButton* nextStepBtn;
-    QPushButton* stopGameBtn;
+//    QComboBox* gameSelector;
+//    QPushButton* startGameBtn;
+//    QPushButton* nextStepBtn;
+//    QPushButton* stopGameBtn;
 
-    QLabel* PC_label;
-    QLabel* I_label;
+//    QLabel* PC_label;
+//    QLabel* I_label;
 
 #ifdef DEBUG
     QTextEdit* textListing;
@@ -83,6 +75,7 @@ private:
 
     Chip8Emu *m_emul;
     Screen* m_screen;
+    CPUBoxWidget *m_debugCPU;
 };
 
 #endif // MAINWINDOW_H

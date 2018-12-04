@@ -6,7 +6,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     QDesktopWidget desktop;
     desktopRect = desktop.availableGeometry(desktop.primaryScreen());
 
-    this->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+    this->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
     this->setMaximumSize(desktopRect.width() - 5, desktopRect.height() - 5);
     // Move app window to center desktop
     this->move(calcDeskTopCenter(this->width(),this->height()));
@@ -51,15 +51,15 @@ void MainWindow::fileOpen()
     }
 
     emit fileLoaded( tmp );
-    gameSelector->addItem(fileName);
+    //gameSelector->addItem(fileName);
 }
 
 void MainWindow::readyToWork(bool flag)
 {
-    newGameAct->setEnabled( flag );
-    startGameBtn->setEnabled( flag );
-    nextStepBtn->setEnabled( flag );
-    stopGameBtn->setEnabled( flag );
+    //    newGameAct->setEnabled( flag );
+    //    startGameBtn->setEnabled( flag );
+    //    nextStepBtn->setEnabled( flag );
+    //    stopGameBtn->setEnabled( flag );
 }
 
 // -------------------------------------------------------------------------------------------
@@ -101,11 +101,21 @@ void MainWindow::createStatusBar()
 
 void MainWindow::createGUI()
 {
-    QDockWidget *dockCPU = new CPUBoxWidget(tr("Debug CPU window"),this);
-    dockCPU->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    addDockWidget(Qt::LeftDockWidgetArea, dockCPU);
-    viewMenu->addAction(dockCPU->toggleViewAction());
-/**
+    QDockWidget *dock = new QDockWidget(tr("Main chip-8 window"), this);
+    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    m_screen = new Screen();
+    dock->setWidget( m_screen );
+    addDockWidget(Qt::LeftDockWidgetArea, dock);
+    viewMenu->addAction(dock->toggleViewAction());
+
+    dock = new QDockWidget(tr("Debug CPU window"), this);
+    m_debugCPU = new CPUBoxWidget();
+    dock->setWidget( m_debugCPU );
+    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    addDockWidget(Qt::RightDockWidgetArea, dock);
+    viewMenu->addAction(dock->toggleViewAction());
+
+    /**
 
     QFrame *frame = new QFrame;
     QVBoxLayout *frameLayout = new QVBoxLayout(frame);
