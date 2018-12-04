@@ -6,6 +6,7 @@
 #include <QColor>
 #include <QPainter>
 #include <QBitArray>
+#include <QPaintEvent>
 
 #include "mydefs.h"
 

@@ -1,11 +1,11 @@
 #include "screen.h"
 
 
-Screen::Screen(QWidget *parent)
+Screen::Screen( QWidget *parent)
     : QWidget(parent)
 {
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // set ideal size as minimum Qimage size/ Can expand, only
-    zoom = 8; // Default each pixel image show as 8x8
+    zoom = 8; // TODO add ability change ixel image size default 8x8
 
     m_display = QBitArray(DISPLAY_X * DISPLAY_Y,false);
 
@@ -35,8 +35,9 @@ void Screen::updateScreen(QBitArray display)
 void Screen::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
+    painter.fillRect( event->rect(), Qt::red);
     painter.setRenderHint(QPainter::Antialiasing, true);
-
+/*
     if (zoom >= 3)
     {
 
@@ -59,7 +60,7 @@ void Screen::paintEvent(QPaintEvent *event)
             drawImagePixel(&painter, x, y);
         }
     }
-
+*/
 }
 
 void Screen::drawImagePixel(QPainter *painter, int x, int y)
