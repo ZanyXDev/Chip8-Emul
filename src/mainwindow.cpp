@@ -85,12 +85,13 @@ void MainWindow::createActions()
     gameMenu->addAction(newGameAct);
     menuBar()->addSeparator();
 
+    viewMenu = menuBar()->addMenu(tr("&View"));
+
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     //QAction *aboutAct = helpMenu->addAction(tr("&About"), this, &MainWindow::about);
     //aboutAct->setStatusTip(tr("Show the application's About box"));
     QAction *aboutQtAct = helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
     aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
-
 }
 
 void MainWindow::createStatusBar()
@@ -100,6 +101,12 @@ void MainWindow::createStatusBar()
 
 void MainWindow::createGUI()
 {
+    QDockWidget *dockCPU = new CPUBoxWidget(tr("Debug CPU window"),this);
+    dockCPU->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    addDockWidget(Qt::LeftDockWidgetArea, dockCPU);
+    viewMenu->addAction(dockCPU->toggleViewAction());
+/**
+
     QFrame *frame = new QFrame;
     QVBoxLayout *frameLayout = new QVBoxLayout(frame);
     QHBoxLayout *cmdLayout = new QHBoxLayout();
@@ -156,10 +163,12 @@ void MainWindow::createGUI()
     //    frameLayout->addLayout(cpuLayout);
     frameLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Expanding));
     setCentralWidget(frame);
+*/
 }
 
 void MainWindow::createConnection()
 {
+    /*
     connect(newGameAct, &QAction::triggered, this, &MainWindow::startGame);
     connect(startGameBtn,&QPushButton::clicked,m_emul,&Chip8Emu::startEmulation);
     connect(nextStepBtn,&QPushButton::clicked,m_emul,&Chip8Emu::stepEmulation);
@@ -175,7 +184,7 @@ void MainWindow::createConnection()
 #ifdef DEBUG
     connect(m_emul,&Chip8Emu::showTime,CTime_label,&QLabel::setText);
 #endif
-
+*/
 }
 
 quint8 MainWindow::mapKey(int mkey)

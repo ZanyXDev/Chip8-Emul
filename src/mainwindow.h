@@ -30,6 +30,7 @@
 #include "screen.h"
 #include "chip8emu.h"
 #include "mydefs.h"
+#include "cpuboxwidget.h"
 
 
 class MainWindow : public QMainWindow
@@ -78,23 +79,7 @@ private:
     QTextEdit* textListing;
     QLabel* CTime_label;
 #endif
-
-    QLabel* V0_label;
-    QLabel* V1_label;
-    QLabel* V2_label;
-    QLabel* V3_label;
-    QLabel* V4_label;
-    QLabel* V5_label;
-    QLabel* V6_label;
-    QLabel* V7_label;
-    QLabel* V8_label;
-    QLabel* V9_label;
-    QLabel* Va_label;
-    QLabel* Vb_label;
-    QLabel* Vc_label;
-    QLabel* Vd_label;
-    QLabel* Ve_label;
-    QLabel* Vf_label;
+    QMenu* viewMenu;
 
     Chip8Emu *m_emul;
     Screen* m_screen;
