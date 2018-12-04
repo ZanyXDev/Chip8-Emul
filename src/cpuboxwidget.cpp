@@ -1,14 +1,9 @@
 ﻿#include "cpuboxwidget.h"
 
-
-
-CPUBoxWidget::CPUBoxWidget(const QString &title, QWidget *parent)
-    : QDockWidget(title,parent)
-{
-    QGroupBox* gb_1 = new QGroupBox(this);
-
+CPUBoxWidget::CPUBoxWidget(QWidget *parent)
+    : QWidget(parent)
+{    
     QVBoxLayout* vbox_1 = new QVBoxLayout();
-    QHBoxLayout* hbox_1 = new QHBoxLayout();
 
     QGridLayout * grLayout = new QGridLayout ();
     {
@@ -148,10 +143,6 @@ CPUBoxWidget::CPUBoxWidget(const QString &title, QWidget *parent)
     gb_Left->setTitle( tr("Data registers:") );
     gb_Left->setLayout( grLayout );
 
-//    QFrame* vLine = new QFrame();
-//    vLine->setFrameShape(QFrame::VLine);
-//    vLine->setFrameShadow(QFrame::Sunken);
-
     QFormLayout *formLayout = new QFormLayout;
     {
         ILED = new QLineEdit( ("0x0") );
@@ -186,9 +177,9 @@ CPUBoxWidget::CPUBoxWidget(const QString &title, QWidget *parent)
     gb_Right->setTitle( tr("Common registers:") );
     gb_Right->setLayout( formLayout);
 
+    QHBoxLayout* hbox_1 = new QHBoxLayout();
     hbox_1->addWidget( gb_Left );
     hbox_1->addSpacerItem( new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored) );
-//    hbox_1->addWidget( vLine );
     hbox_1->addWidget( gb_Right );
 
     QFrame* hLine = new QFrame();
@@ -200,6 +191,7 @@ CPUBoxWidget::CPUBoxWidget(const QString &title, QWidget *parent)
     vbox_1->addLayout( hbox_1);
     vbox_1->addWidget( hLine );
     vbox_1->addWidget( showAsBinaryCHB );
-    gb_1->setLayout( vbox_1 );
-    this->setWidget( gb_1);
+
+    this->setLayout(vbox_1);
 }
+

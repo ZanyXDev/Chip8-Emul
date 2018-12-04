@@ -1,7 +1,7 @@
 ﻿#ifndef CPUBOXWIDGET_H
 #define CPUBOXWIDGET_H
 
-#include <QDockWidget>
+#include <QWidget>
 #include <QGroupBox>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -14,11 +14,11 @@
 #include <QLineEdit>
 #include <QCheckBox>
 
-class CPUBoxWidget : public QDockWidget
+class CPUBoxWidget : public QWidget
 {
     Q_OBJECT
 public:    
-    explicit CPUBoxWidget(const QString &title,  QWidget *parent = Q_NULLPTR);
+    explicit CPUBoxWidget( QWidget *parent = Q_NULLPTR);
 
 
 private:
