@@ -35,9 +35,9 @@ void Screen::updateScreen(QBitArray display)
 void Screen::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
-    painter.fillRect( event->rect(), Qt::red);
+    painter.fillRect( event->rect(), Qt::white);
     painter.setRenderHint(QPainter::Antialiasing, true);
-/*
+
     if (zoom >= 3)
     {
 
@@ -60,7 +60,7 @@ void Screen::paintEvent(QPaintEvent *event)
             drawImagePixel(&painter, x, y);
         }
     }
-*/
+
 }
 
 void Screen::drawImagePixel(QPainter *painter, int x, int y)
