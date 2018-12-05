@@ -16,20 +16,26 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtWidgets/QApplication>
-#include "mainwindow.h"
 #include "display.h"
+#include <QApplication>
+#include "mainwindow.h"
 
-#define  VERSION "0.0.5"
 
 int main(int argc, char *argv[])
 {
+    Q_INIT_RESOURCE(chip8_res);
     QApplication app(argc, argv);
 
     app.setApplicationName("chip8-qt5");
-    app.setApplicationVersion(VERSION);
+
 
     MainWindow mainWin;
+
+    //    const QRect availableGeometry = QApplication::desktop()->availableGeometry(&mw);
+    //    mw.resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
+    //    mw.move((availableGeometry.width() - mw.width()) / 2,
+    //            (availableGeometry.height() - mw.height()) / 2);
+
     mainWin.setWindowTitle(app.applicationName() + " " + app.applicationVersion());
     mainWin.show();
 
