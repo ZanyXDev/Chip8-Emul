@@ -18,6 +18,7 @@
 #include <QFileDialog>
 #include <QByteArray>
 #include <QKeyEvent>
+#include <QStyle>
 
 #include "screen.h"
 #include "chip8emu.h"
@@ -46,7 +47,10 @@ protected:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 private:
-    void createActions();
+    //void createActions();
+    void setupFileActions();
+    void setupGameActions();
+    void setupOtherActions();
     void createStatusBar();
     void createGUI();
     void createConnection();
@@ -59,16 +63,10 @@ private:
     QAction* newGameAct;
     QRect desktopRect;
 
-//    QComboBox* gameSelector;
-//    QPushButton* startGameBtn;
-//    QPushButton* nextStepBtn;
-//    QPushButton* stopGameBtn;
-
-//    QLabel* PC_label;
-//    QLabel* I_label;
-
-#ifdef DEBUG
+    QToolBar *tb;
     QTextEdit* textListing;
+#ifdef DEBUG
+
     QLabel* CTime_label;
 #endif
     QMenu* viewMenu;
@@ -76,6 +74,7 @@ private:
     Chip8Emu *m_emul;
     Screen* m_screen;
     CPUBoxWidget *m_debugCPU;
+    const QString rsrcPath = ":res/images/";
 };
 
 #endif // MAINWINDOW_H
