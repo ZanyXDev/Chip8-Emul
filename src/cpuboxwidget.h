@@ -13,6 +13,8 @@
 #include <QTextEdit>
 #include <QLineEdit>
 #include <QCheckBox>
+#include <QByteArray>
+#include <QDataStream>
 
 class CPUBoxWidget : public QWidget
 {
@@ -20,8 +22,13 @@ class CPUBoxWidget : public QWidget
 public:    
     explicit CPUBoxWidget( QWidget *parent = Q_NULLPTR);
 
+public slots:
+    void updateRegValues(QByteArray msg);
 
 private:
+    QString hexToBinaryString(quint8 value);
+    void showValues(bool flag);
+
     QLineEdit* v0LED;
     QLineEdit* v1LED;
     QLineEdit* v2LED;
@@ -45,6 +52,12 @@ private:
     QLineEdit* soundTimerLED;
     QTextEdit* stackTEdit;
     QCheckBox* showAsBinaryCHB;
+    QByteArray m_regs;      // 16 registers 8bit size;
+    QVector<quint16> m_stack;     // deep 16 levels;
+    quint16 PC;             // mem offset counter
+    quint16 regI;           // 16bit address register I
+    quint8 delay_timer;     // 8bit delay timer;
+    quint8 sound_timer;     // 8bit sound timer;
 };
 
 #endif // CPUBOXWIDGET_H

@@ -195,3 +195,98 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
     this->setLayout(vbox_1);
 }
 
+void CPUBoxWidget::updateRegValues(QByteArray msg)
+{
+    QDataStream in(&msg,QIODevice::ReadOnly);
+    if (in.version() == QDataStream::Qt_5_10)
+    {
+        in >> m_regs;
+        in >> PC;
+        in >> regI;
+        in >> delay_timer;
+        in >> sound_timer;
+        in >> m_stack;
+        showValues( showAsBinaryCHB->isChecked() );
+    }
+}
+
+QString CPUBoxWidget::hexToBinaryString(quint8 value)
+{
+    QString result;
+    return result;
+}
+
+void CPUBoxWidget::showValues(bool flag)
+{
+    QString txt;
+    QString hint;
+    // ------ parser --------
+    if (flag)
+    {
+
+    }
+    else
+    {
+        // FIXME Databinding ????
+        v0LED->setText( QString("0x%1").arg( m_regs.at(0),0,16) );
+        v0LED->setToolTip( hexToBinaryString( m_regs.at(0) ) );
+
+        v1LED->setText( QString("0x%1").arg( m_regs.at(1),0,16) );
+        v1LED->setToolTip( hexToBinaryString(m_regs.at(1)) );
+
+        v2LED->setText( QString("0x%1").arg(m_regs.at(2),0,16) );
+        v2LED->setToolTip( hexToBinaryString(m_regs.at(2)) );
+
+        v3LED->setText( QString("0x%1").arg(m_regs.at(3),0,16) );
+        v3LED->setToolTip( hexToBinaryString(m_regs.at(3)) );
+
+        v4LED->setText( QString("0x%1").arg(m_regs.at(4),0,16) );
+        v4LED->setToolTip( hexToBinaryString(m_regs.at(4)) );
+
+        v5LED->setText( QString("0x%1").arg(m_regs.at(5),0,16) );
+        v5LED->setToolTip( hexToBinaryString(m_regs.at(5)) );
+
+        v6LED->setText( QString("0x%1").arg(m_regs.at(6),0,16) );
+        v6LED->setToolTip( hexToBinaryString(m_regs.at(6)) );
+
+        v7LED->setText( QString("0x%1").arg(m_regs.at(7),0,16) );
+        v7LED->setToolTip( hexToBinaryString(m_regs.at(7)) );
+
+        v8LED->setText( QString("0x%1").arg(m_regs.at(8),0,16) );
+        v8LED->setToolTip( hexToBinaryString(m_regs.at(8)) );
+
+        v9LED->setText( QString("0x%1").arg(m_regs.at(9),0,16) );
+        v9LED->setToolTip( hexToBinaryString(m_regs.at(9)) );
+
+        vaLED->setText( QString("0x%1").arg(m_regs.at(10),0,16) );
+        vaLED->setToolTip( hexToBinaryString(m_regs.at(10)) );
+
+        vbLED->setText( QString("0x%1").arg(m_regs.at(11),0,16) );
+        vbLED->setToolTip( hexToBinaryString(m_regs.at(11)) );
+
+        vcLED->setText( QString("0x%1").arg(m_regs.at(12),0,16) );
+        vcLED->setToolTip( hexToBinaryString(m_regs.at(12)) );
+
+        vdLED->setText( QString("0x%1").arg(m_regs.at(13),0,16) );
+        vdLED->setToolTip( hexToBinaryString(m_regs.at(13)) );
+
+        veLED->setText( QString("0x%1").arg(m_regs.at(14),0,16) );
+        veLED->setToolTip( hexToBinaryString(m_regs.at(14)) );
+
+        vfLED->setText( QString("0x%1").arg(m_regs.at(15),0,16) );
+        vfLED->setToolTip( hexToBinaryString(m_regs.at(15)) );
+
+        ILED->setText( QString("0x%1").arg(regI,0,16) );
+        ILED->setToolTip( hexToBinaryString(regI) );
+
+        SPLED->setText( QString("0x%1").arg(PC,0,16) );
+        SPLED->setToolTip( hexToBinaryString(PC) );
+
+        delayTimerLED->setText( QString("0x%1").arg(delay_timer,0,16) );
+        delayTimerLED->setToolTip( hexToBinaryString( delay_timer) );
+
+        soundTimerLED->setText( QString("0x%1").arg( sound_timer,0,16) );
+        soundTimerLED->setToolTip( hexToBinaryString( sound_timer) );
+    }
+}
+
