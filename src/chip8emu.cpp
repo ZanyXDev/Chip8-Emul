@@ -69,8 +69,9 @@ void Chip8Emu::executeNextOpcode()
         if ( KK == 0xEE )
         {
             // * 00EE RET   Возвратиться из подпрограммы
-            asmTextString.append(QString("RET \t ; Return sub-routine"));
+
             PC = m_stack.takeFirst();
+            asmTextString.append(QString("RET \t ; Return sub-routine to address 0x%1").arg(PC,0,16));
         }
 
         if ( X == 0xC)
@@ -118,14 +119,14 @@ void Chip8Emu::executeNextOpcode()
         // 1nnn JP nnn Перейти по адресу nnn
         asmTextString.append(QString("JP 0x%1 \t ; Jump to 0x%1 address").arg( NNN,0,16 ));
         PC = NNN;
-        PC-=2; // correct call and jump pointer
+        //PC-=2; // correct call and jump pointer
         break;
     case 0x2:
         // 2nnn CALL nnn Вызов подпрограммы по адресу nnn
         asmTextString.append(QString("CALL 0x%1 \t ; Call sub-routine from 0x%1 address").arg( NNN,0,16 ));
         m_stack.push_front( PC );
         PC = NNN;
-        PC-=2; // correct call and jump pointer
+        //PC-=2; // correct call and jump pointer
         break;
     case 0x3: // 3xkk SE Vx, kk Пропустить следующую инструкцию, если регистр Vx = kk
         asmTextString.append(QString("SE V%1, 0x%2 \t ; Skip next instruction if V%1 = 0x%2").arg( X, 0, 16 ).arg( KK,0,16 ));
@@ -355,7 +356,14 @@ void Chip8Emu::executeNextOpcode()
             // Например, нам надо вывести на экран цифру 5. Для этого загружаем в Vx число 5.
             // Потом команда LD F, Vx загрузит адрес спрайта, содержащего цифру 5, в регистр I
             asmTextString.append(QString("LD F, V%1 \t ; Show sprite font ").arg( X,0,16 ) );
+#ifdef DEBUG
+        {
+            quint16 tmp = getRegister( X ) * SMALL_FONT_SIZE;
+            setRegI( tmp );
+        }
+#else
             setRegI( getRegister( X ) * SMALL_FONT_SIZE );
+#endif
             break;
         case 0x30:
             // Fx30 LD HF, Vx Работает подобно команде Fx29, только загружает спрайты размером 8x10 пикселей
@@ -473,9 +481,6 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
             {
                 newPixel = drw  & (1 << (7 - col));
                 idx = getIndex ( (vx + col), (vy + row ));
-
-                qDebug()<<"vx:"<<vx<<" vy:"<<vy<<"row:"<<row<<" col:"<<col<<" idx:" << idx;
-
                 existPixel = m_screen.testBit( idx );
                 if ( existPixel )
                 {
@@ -500,6 +505,7 @@ void Chip8Emu::initDevice()
     opcode_count = 0 ;
     m_memory.fill(0x0,RAM_SIZE);   // clear 4k ram memory
     m_regs.fill(0x0,16);
+
     m_stack.clear();
     m_screen.fill(false, DISPLAY_X * DISPLAY_Y);
     m_keys.fill(false, KEY_PAD);   // All keys unPressed
@@ -587,7 +593,6 @@ quint8 Chip8Emu::getSumCF( quint8 x, quint8 y)
 void Chip8Emu::saveBCDRegToI(quint8 m_reg_val)
 {    
     quint16 val_i   = getRegI();
-    qDebug() <<"REG value:" <<m_reg_val<< " REG_I:" << val_i;
 
     m_memory[val_i] = (m_reg_val - (m_reg_val % 100)) / 100;
     m_reg_val -= m_memory.at(val_i) * 100;
@@ -599,6 +604,12 @@ void Chip8Emu::saveBCDRegToI(quint8 m_reg_val)
 
     m_memory[val_i] = m_reg_val;
 
+    qDebug() << QString("Reg value:%1 | I value: %2| Memory[I]: %3| Memory[I+1]: %4| Memory[I+2]: %5")
+                .arg(m_reg_val,0,16)
+                .arg( val_i,0,16)
+                .arg( m_memory.at( getRegI() ))
+                .arg( m_memory.at( getRegI()+1 ))
+                .arg( m_memory.at( getRegI()+2 ));
 }
 
 void Chip8Emu::saveRegToMemory(quint8 m_reg_val)
