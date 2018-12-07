@@ -10,6 +10,7 @@
 #include <QVector>
 #include <QRandomGenerator>
 #include <QTimer>
+#include <QDataStream>
 
 #include "mydefs.h"
 
@@ -28,6 +29,7 @@ signals:
     void updateScreen( QBitArray screen );
     void finishExecute();
     void showDecodeOpCode( const QString &asm_txt );
+    void updateRegValues(QByteArray msg);
 
 #ifdef DEBUG
     void showTime(const QString &m_time);
@@ -105,6 +107,7 @@ private:
      */
     void loadRegFromMemory(quint8 m_reg_val);
 
+    void createMessage();
     QTimer m_timer;
     QByteArray m_memory;    // 4k ram memory
     QByteArray m_regs;      // 16 registers 8bit size;

@@ -276,7 +276,7 @@ void Chip8Emu::executeNextOpcode()
         break;
     case 0xC: //Cxkk RND Vx, kk Устанавливается Vx = (случайное число от 0 до 255) & kk
         asmTextString.append(QString("RND V%1, 0x%2 \t ; Set register V%1 = random {0,255} & 0x%2 ").arg( X,0,16 ).arg( KK,0,16 ));
-        setRegister(X, QRandomGenerator::global()->bounded( 255 ));
+        setRegister(X, QRandomGenerator::global()->bounded( 256 ) & KK );
         break;
     case 0xD: /** Dxyn DRW Vx, Vy, n Нарисовать на экране спрайт. Эта инструкция считывает n байт по адресу
                     * содержащемуся в регистре I и рисует их на экране в виде спрайта c координатой Vx, Vy.
@@ -285,9 +285,9 @@ void Chip8Emu::executeNextOpcode()
                     * то VF устанавливается в 1, иначе в 0.
                     **/
         asmTextString.append(QString("DRW V%1, V%3, 0x%5 \t ; Draw sprite (0x%5 bytes) in the pos saved V%1[0x%2], V%3[0x%4] ")
-                                    .arg( X,0,16 ).arg( getRegister( X ),0,16 )
-                                    .arg( Y,0,16 ).arg( getRegister( Y ),0,16 )
-                                    .arg( LO,0,16 ));
+                             .arg( X,0,16 ).arg( getRegister( X ),0,16 )
+                             .arg( Y,0,16 ).arg( getRegister( Y ),0,16 )
+                             .arg( LO,0,16 ));
         drawSprite( getRegister( X ), getRegister ( Y ), LO);
         break;
     case 0xE:
@@ -391,7 +391,7 @@ void Chip8Emu::executeNextOpcode()
 
     qDebug() << QString("0x%1: %2").arg(PC,0,16).arg(asmTextString);
     emit showDecodeOpCode ( QString("0x%1:\t%2\t%3").arg(PC,0,16).arg(opCode,0,16).arg(asmTextString) );
-
+    createMessage();
     PC+=2;
     return;
 }
@@ -465,7 +465,7 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
     maxLine = (( 0 == n ) | ( n > 16 ) ) ? 16 : n ; // check how many rows draw.
 
     if (!m_ExtendedMode)
-    {        
+    {
         for (int row = 0; row < maxLine; ++row)
         {
             drw = m_memory.at(regI+row);
@@ -526,6 +526,7 @@ void Chip8Emu::initDevice()
     // Load font
     m_memory.insert(0,m_smallFont);
 
+    createMessage();
 }
 
 void Chip8Emu::changeKeyState(quint8 key, bool state)
@@ -622,6 +623,20 @@ void Chip8Emu::loadRegFromMemory(quint8 m_reg_val)
             setRegister(i, m_memory.at(idx + i) );
         }
     }
+}
+
+void Chip8Emu::createMessage()
+{
+    QByteArray m_msg;
+    QDataStream out(&m_msg,QIODevice::WriteOnly);
+    out.setVersion( QDataStream::Qt_5_10 );
+    out << m_regs;
+    out << PC;
+    out << regI;
+    out << delay_timer;
+    out << sound_timer;
+    out << m_stack;
+    emit updateRegValues( m_msg );
 }
 
 quint8 Chip8Emu::getRealKey (quint8 m_emu_key)

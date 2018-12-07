@@ -2,7 +2,7 @@ QT += gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = chip8-qt5
+TARGET = chip8qt5
 
 TEMPLATE = app
 
@@ -17,21 +17,21 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-#RESOURCES     = chip8-qt5.qrc
+RESOURCES     = chip8_res.qrc
 
 HEADERS += \
     src/mainwindow.h  \ 
     src/screen.h \
     src/chip8emu.h \
-    src/mydefs.h	
+    src/mydefs.h \	
+    src/cpuboxwidget.h
 
 SOURCES = \
     src/main.cpp \
     src/mainwindow.cpp \
     src/screen.cpp \
-    src/chip8emu.cpp
+    src/chip8emu.cpp \
+    src/cpuboxwidget.cpp
 
 CONFIG += console
-
-
 
