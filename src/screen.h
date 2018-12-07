@@ -6,6 +6,10 @@
 #include <QColor>
 #include <QPainter>
 #include <QBitArray>
+#include <QPaintEvent>
+#include <QPixmap>
+
+#include <QDebug>
 
 #include "mydefs.h"
 
@@ -26,6 +30,7 @@ protected:
   void paintEvent(QPaintEvent *event);
 
 private:
+  QPixmap* m_pixmap;
   QColor bgColor;
   QColor fgColor;
   QColor lineColor;
@@ -34,6 +39,7 @@ private:
 
   void drawImagePixel(QPainter *painter, int x, int y);
 
+  void drawOnSurface();
 };
 
 #endif // SCREEN_H

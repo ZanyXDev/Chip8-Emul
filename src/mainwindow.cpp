@@ -1,19 +1,26 @@
 #include "mainwindow.h"
 
 
+
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     QDesktopWidget desktop;
     desktopRect = desktop.availableGeometry(desktop.primaryScreen());
 
-    this->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+    this->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
     this->setMaximumSize(desktopRect.width() - 5, desktopRect.height() - 5);
     // Move app window to center desktop
     this->move(calcDeskTopCenter(this->width(),this->height()));
 
+    setToolButtonStyle(Qt::ToolButtonFollowStyle);
+
     m_emul = new Chip8Emu();
 
-    createActions();
+    //createActions();
+    setupFileActions();
+    setupGameActions();
+    setupOtherActions();
     createGUI();
     createStatusBar();
     createConnection();
@@ -51,46 +58,96 @@ void MainWindow::fileOpen()
     }
 
     emit fileLoaded( tmp );
-    gameSelector->addItem(fileName);
+    //gameSelector->addItem(fileName);
 }
 
 void MainWindow::readyToWork(bool flag)
 {
-    newGameAct->setEnabled( flag );
-    startGameBtn->setEnabled( flag );
-    nextStepBtn->setEnabled( flag );
-    stopGameBtn->setEnabled( flag );
+    //    newGameAct->setEnabled( flag );
+    //    startGameBtn->setEnabled( flag );
+    //    nextStepBtn->setEnabled( flag );
+    //    stopGameBtn->setEnabled( flag );
 }
 
 // -------------------------------------------------------------------------------------------
-void MainWindow::createActions()
-{    
-    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-    QAction *fileLoadAct = fileMenu->addAction(tr("&Load ROM"), this, &MainWindow::fileOpen);
-    fileLoadAct->setShortcuts(QKeySequence::Open);
-    fileLoadAct->setStatusTip(tr("Load ROM from file..."));
+//void MainWindow::createActions()
+//{
+//    QToolBar *mainToolBar = addToolBar(tr("File"));
 
-    fileMenu->addSeparator();
+//    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+//    QAction *fileLoadAct = fileMenu->addAction(tr("&Load ROM"), this, &MainWindow::fileOpen);
+//    fileLoadAct->setShortcuts(QKeySequence::Open);
+//    fileLoadAct->setStatusTip(tr("Load ROM from file..."));
+//    fileMenu->addSeparator();
+//    mainToolBar->addAction(fileLoadAct);
 
-    QAction *quitAct = fileMenu->addAction(tr("&Quit"), this, &QWidget::close);
-    quitAct->setShortcuts(QKeySequence::Quit);
-    quitAct->setStatusTip(tr("Quit the application"));
+//    QAction *quitAct = fileMenu->addAction(tr("&Quit"), this, &QWidget::close);
+//    quitAct->setShortcuts(QKeySequence::Quit);
+//    quitAct->setStatusTip(tr("Quit the application"));
 
-    menuBar()->addSeparator();
-    QMenu *gameMenu = menuBar()->addMenu(tr("&Game"));
+//    menuBar()->addSeparator();
+//    QMenu *gameMenu = menuBar()->addMenu(tr("&Game"));
 
-    newGameAct = new QAction(tr("&Start game"),this);
-    newGameAct->setStatusTip(tr("Start new game"));
-    newGameAct->setEnabled( false );
-    gameMenu->addAction(newGameAct);
-    menuBar()->addSeparator();
+//    newGameAct = new QAction(tr("&Start game"),this);
+//    newGameAct->setStatusTip(tr("Start new game"));
+//    newGameAct->setEnabled( false );
+//    gameMenu->addAction(newGameAct);
+//    menuBar()->addSeparator();
+
+//    viewMenu = menuBar()->addMenu(tr("&View"));
+
+//    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+//    //QAction *aboutAct = helpMenu->addAction(tr("&About"), this, &MainWindow::about);
+//    //aboutAct->setStatusTip(tr("Show the application's About box"));
+//    QAction *aboutQtAct = helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
+//    aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
+//}
+
+void MainWindow::setupFileActions()
+{
+    QToolBar *tb = addToolBar(tr("File Actions"));
+    QMenu *menu = menuBar()->addMenu(tr("&File"));
+
+    const QIcon openIcon = QIcon::fromTheme("document-open", QIcon(rsrcPath + "/fileopen.png"));
+    QAction *a = menu->addAction(openIcon, tr("&Open..."), this, &MainWindow::fileOpen);
+    a->setShortcut(QKeySequence::Open);
+    tb->addAction(a);
+    menu->addSeparator();
+
+    a = menu->addAction(tr("&Quit"), this, &QWidget::close);
+    a->setShortcut(Qt::CTRL + Qt::Key_Q);
+}
+
+void MainWindow::setupGameActions()
+{
+    QToolBar *tb = addToolBar(tr("Game Actions"));
+    QMenu *menu = menuBar()->addMenu(tr("&Game"));
+
+    QAction *actionStart = menu->addAction(style()->standardIcon(QStyle::SP_MediaPlay),
+                                          tr("&Start..."), m_emul,&Chip8Emu::startEmulation);
+    tb->addAction( actionStart );
+    menu->addAction( actionStart );
+
+    QAction *actionStep = menu->addAction(style()->standardIcon(QStyle::SP_MediaSkipForward),
+                                          tr("&Start..."), m_emul,&Chip8Emu::stepEmulation);
+    tb->addAction( actionStep );
+    menu->addAction( actionStep );
+
+    QAction *actionStop = menu->addAction(style()->standardIcon(QStyle::SP_MediaStop),
+                                          tr("&Stop..."), m_emul,&Chip8Emu::stopEmulation);
+    tb->addAction( actionStop );
+    menu->addAction( actionStop );
+}
+
+void MainWindow::setupOtherActions()
+{
+    viewMenu = menuBar()->addMenu(tr("&View"));
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     //QAction *aboutAct = helpMenu->addAction(tr("&About"), this, &MainWindow::about);
     //aboutAct->setStatusTip(tr("Show the application's About box"));
     QAction *aboutQtAct = helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
     aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
-
 }
 
 void MainWindow::createStatusBar()
@@ -100,82 +157,43 @@ void MainWindow::createStatusBar()
 
 void MainWindow::createGUI()
 {
-    QFrame *frame = new QFrame;
-    QVBoxLayout *frameLayout = new QVBoxLayout(frame);
-    QHBoxLayout *cmdLayout = new QHBoxLayout();
-
-    gameSelector = new QComboBox();
-#ifdef DEBUG
-    gameSelector->addItem(tr("Game 1"));
-    gameSelector->addItem(tr("Game 2"));
-    gameSelector->addItem(tr("Game 3 with Long Name"));
-#endif
-    cmdLayout->addWidget(gameSelector);
-    cmdLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Expanding));
-
-    startGameBtn = new QPushButton("&Start");
-    startGameBtn->setEnabled( false);
-    cmdLayout->addWidget(startGameBtn);
-
-    nextStepBtn = new QPushButton("&Next step");
-    nextStepBtn->setEnabled( false );
-    cmdLayout->addWidget(nextStepBtn);
-
-    stopGameBtn = new QPushButton("&Stop");
-    stopGameBtn->setEnabled( false );
-    cmdLayout->addWidget(stopGameBtn);
-
-    QHBoxLayout *mainLayout = new QHBoxLayout();
-
+    QDockWidget *dock = new QDockWidget(tr("Main chip-8 window"), this);
+    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     m_screen = new Screen();
-    mainLayout->addWidget(m_screen);
+    dock->setWidget( m_screen );
+    addDockWidget(Qt::LeftDockWidgetArea, dock);
+    viewMenu->addAction(dock->toggleViewAction());
 
-#ifdef DEBUG
+    dock = new QDockWidget(tr("Debug CPU window"), this);
+    m_debugCPU = new CPUBoxWidget();
+    dock->setWidget( m_debugCPU );
+    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    addDockWidget(Qt::RightDockWidgetArea, dock);
+    viewMenu->addAction(dock->toggleViewAction());
+
+    dock = new QDockWidget(tr("ASM listing window"), this);
     textListing = new QTextEdit();
-    textListing->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // set ideal size as minimum Qimage size/ Can expand, only
     textListing->setReadOnly(true);
-    mainLayout->addWidget(textListing);
-#endif
 
-    QHBoxLayout *countersLayout = new QHBoxLayout();
-    countersLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Expanding));
-
-#ifdef DEBUG
-    CTime_label = new QLabel("Time:");
-    countersLayout->addWidget(CTime_label);
-#elif
-    PC_label    = new QLabel("PC count:0x200");
-    I_label     = new QLabel("I  count:0x000");
-    countersLayout->addWidget(PC_label);
-    countersLayout->addWidget(I_label);
-#endif
-
-    frameLayout->addLayout(cmdLayout);
-    frameLayout->addLayout(mainLayout);
-    frameLayout->addLayout(countersLayout);
-    //    frameLayout->addLayout(cpuLayout);
-    frameLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Expanding));
-    setCentralWidget(frame);
+    dock->setWidget( textListing );
+    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
+    addDockWidget(Qt::BottomDockWidgetArea, dock);
+    viewMenu->addAction(dock->toggleViewAction());
 }
 
 void MainWindow::createConnection()
 {
+ /*
     connect(newGameAct, &QAction::triggered, this, &MainWindow::startGame);
-    connect(startGameBtn,&QPushButton::clicked,m_emul,&Chip8Emu::startEmulation);
-    connect(nextStepBtn,&QPushButton::clicked,m_emul,&Chip8Emu::stepEmulation);
-    connect(stopGameBtn,&QPushButton::clicked,m_emul,&Chip8Emu::stopEmulation);
-
-    connect(this,&MainWindow::fileLoaded,m_emul,&Chip8Emu::loadData2Memory);
     connect(m_emul,&Chip8Emu::ReadyToWork,this,&MainWindow::readyToWork);
+    connect(m_emul,&Chip8Emu::showTime,this,&);
+*/
+    connect(this,&MainWindow::fileLoaded,m_emul,&Chip8Emu::loadData2Memory);
     connect(m_emul,&Chip8Emu::updateScreen,m_screen,&Screen::updateScreen);
-    connect(m_emul,&Chip8Emu::showDecodeOpCode,textListing,&QTextEdit::append);
     connect(this,&MainWindow::changeKeyState,m_emul,&Chip8Emu::changeKeyState);
+    connect(m_emul,&Chip8Emu::showDecodeOpCode,textListing,&QTextEdit::append);
 
-
-#ifdef DEBUG
-    connect(m_emul,&Chip8Emu::showTime,CTime_label,&QLabel::setText);
-#endif
-
+    connect(m_emul,&Chip8Emu::updateRegValues,m_debugCPU,&CPUBoxWidget::updateRegValues);
 }
 
 quint8 MainWindow::mapKey(int mkey)
@@ -225,6 +243,8 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
     emit changeKeyState( mapKey( event->key() ), false );
     QMainWindow::keyReleaseEvent(event);
 }
+
+
 
 
 

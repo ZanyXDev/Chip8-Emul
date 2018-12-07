@@ -6,6 +6,7 @@
 #include <QApplication>
 #include <QGuiApplication>
 #include <QDesktopWidget>
+#include <QDockWidget>
 
 #include <QMainWindow>
 #include <QMenu>
@@ -14,22 +15,15 @@
 #include <QToolBar>
 #include <QAction>
 
-#include <QComboBox>
-#include <QLabel>
-#include <QPushButton>
-#include <QTextEdit>
-
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGridLayout>
-
 #include <QFileDialog>
 #include <QByteArray>
 #include <QKeyEvent>
+#include <QStyle>
 
 #include "screen.h"
 #include "chip8emu.h"
 #include "mydefs.h"
+#include "cpuboxwidget.h"
 
 
 class MainWindow : public QMainWindow
@@ -53,7 +47,10 @@ protected:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 private:
-    void createActions();
+    //void createActions();
+    void setupFileActions();
+    void setupGameActions();
+    void setupOtherActions();
     void createStatusBar();
     void createGUI();
     void createConnection();
@@ -66,38 +63,18 @@ private:
     QAction* newGameAct;
     QRect desktopRect;
 
-    QComboBox* gameSelector;
-    QPushButton* startGameBtn;
-    QPushButton* nextStepBtn;
-    QPushButton* stopGameBtn;
-
-    QLabel* PC_label;
-    QLabel* I_label;
-
-#ifdef DEBUG
+    QToolBar *tb;
     QTextEdit* textListing;
+#ifdef DEBUG
+
     QLabel* CTime_label;
 #endif
-
-    QLabel* V0_label;
-    QLabel* V1_label;
-    QLabel* V2_label;
-    QLabel* V3_label;
-    QLabel* V4_label;
-    QLabel* V5_label;
-    QLabel* V6_label;
-    QLabel* V7_label;
-    QLabel* V8_label;
-    QLabel* V9_label;
-    QLabel* Va_label;
-    QLabel* Vb_label;
-    QLabel* Vc_label;
-    QLabel* Vd_label;
-    QLabel* Ve_label;
-    QLabel* Vf_label;
+    QMenu* viewMenu;
 
     Chip8Emu *m_emul;
     Screen* m_screen;
+    CPUBoxWidget *m_debugCPU;
+    const QString rsrcPath = ":res/images/";
 };
 
 #endif // MAINWINDOW_H
