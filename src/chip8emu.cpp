@@ -628,7 +628,7 @@ void Chip8Emu::loadRegFromMemory(quint8 m_reg_val)
 {
     if (m_reg_val <= REG_VF)
     {
-        quint8 idx = getRegI();
+        quint16 idx = getRegI();
         for (int i=0; i<=m_reg_val; ++i)
         {
             setRegister(i, m_memory.at(idx + i) );
