@@ -3,6 +3,7 @@
 Chip8Emu::Chip8Emu(QObject *parent)
     : QObject(parent)
 {
+    //FIXME need delete
     initDevice();
 
     connect(&m_timer,&QTimer::timeout,this,&Chip8Emu::execute);
@@ -11,7 +12,7 @@ Chip8Emu::Chip8Emu(QObject *parent)
 void Chip8Emu::loadData2Memory(QByteArray &data)
 {
     initDevice();
-    qDebug() << "load: " << data.size() << " bytes";
+    //qDebug() << "load: " << data.size() << " bytes";
     if ( !data.isEmpty() &&
          ( data.size() <= RAM_SIZE - START_ADDR)  )
     {
@@ -39,6 +40,7 @@ void Chip8Emu::stopEmulation()
 
 void Chip8Emu::executeNextOpcode()
 {
+    qDebug() << "PC:" << PC;
     if (PC > m_memory.size() - 2)
     {
         emit finishExecute();
@@ -72,6 +74,7 @@ void Chip8Emu::executeNextOpcode()
 
             PC = m_stack.takeFirst();
             asmTextString.append(QString("RET \t ; Return sub-routine to address 0x%1").arg(PC,0,16));
+            PC -=2;
         }
 
         if ( X == 0xC)
@@ -119,14 +122,14 @@ void Chip8Emu::executeNextOpcode()
         // 1nnn JP nnn Перейти по адресу nnn
         asmTextString.append(QString("JP 0x%1 \t ; Jump to 0x%1 address").arg( NNN,0,16 ));
         PC = NNN;
-        //PC-=2; // correct call and jump pointer
+        PC-=2; // correct call and jump pointer
         break;
     case 0x2:
         // 2nnn CALL nnn Вызов подпрограммы по адресу nnn
         asmTextString.append(QString("CALL 0x%1 \t ; Call sub-routine from 0x%1 address").arg( NNN,0,16 ));
         m_stack.push_front( PC );
         PC = NNN;
-        //PC-=2; // correct call and jump pointer
+        PC-=2; // correct call and jump pointer
         break;
     case 0x3: // 3xkk SE Vx, kk Пропустить следующую инструкцию, если регистр Vx = kk
         asmTextString.append(QString("SE V%1, 0x%2 \t ; Skip next instruction if V%1 = 0x%2").arg( X, 0, 16 ).arg( KK,0,16 ));
@@ -274,6 +277,7 @@ void Chip8Emu::executeNextOpcode()
         // Bnnn JP V0, nnn Перейти по адресу nnn + значение в регистре V0.
         asmTextString.append(QString("JP V0, 0x%1 \t ; Jump to address V0 + %1").arg( NNN,0,16 ));
         PC = getRegister( 0 ) + NNN;
+        PC -=2;
         break;
     case 0xC: //Cxkk RND Vx, kk Устанавливается Vx = (случайное число от 0 до 255) & kk
         asmTextString.append(QString("RND V%1, 0x%2 \t ; Set register V%1 = random {0,255} & 0x%2 ").arg( X,0,16 ).arg( KK,0,16 ));
@@ -356,14 +360,22 @@ void Chip8Emu::executeNextOpcode()
             // Например, нам надо вывести на экран цифру 5. Для этого загружаем в Vx число 5.
             // Потом команда LD F, Vx загрузит адрес спрайта, содержащего цифру 5, в регистр I
             asmTextString.append(QString("LD F, V%1 \t ; Show sprite font ").arg( X,0,16 ) );
+
 #ifdef DEBUG
         {
-            quint16 tmp = getRegister( X ) * SMALL_FONT_SIZE;
-            setRegI( tmp );
+            quint32 res;
+            quint16 curRegValue = getRegister( X );
+
+            res = curRegValue * SMALL_FONT_SIZE;
+
+            setRegI( res );
+            qDebug() << "Register " << X << " has value:" << curRegValue << " new value register I:" << res;
         }
+
 #else
             setRegI( getRegister( X ) * SMALL_FONT_SIZE );
 #endif
+
             break;
         case 0x30:
             // Fx30 LD HF, Vx Работает подобно команде Fx29, только загружает спрайты размером 8x10 пикселей
@@ -372,7 +384,7 @@ void Chip8Emu::executeNextOpcode()
             break;
         case 0x33: // Fx33 LD B, Vx Сохранить значение регистра Vx в двоично-десятичном (BCD) представлении по адресам I, I+1 и I+2
             asmTextString.append(QString("LD B, V%1 \t ; Save register V%1 in memory {binary-decimal presentation},  address register I, I+1, I+2 ").arg( X,0,16 ) );
-            saveBCDRegToI( getRegister ( X ) );
+            //  saveBCDRegToI( getRegister ( X ) );
             break;
         case 0x55: // Fx55 LD [I], Vx Сохранить значения регистров от V0 до Vx в памяти, начиная с адреса находящегося в I
             asmTextString.append(QString("LD [I], V%1 \t ; Save registers {V0, V%1} in memory, start address = register I ").arg( X,0,16 ) );
@@ -381,6 +393,7 @@ void Chip8Emu::executeNextOpcode()
         case 0x65: // Fx65 LD Vx, [I] Загрузить значения регистров от V0 до Vx из памяти, начиная с адреса находящегося в I
             asmTextString.append(QString("LD V%1, [I] \t ; Load registers {V0, V%1} from memory, start address = register I ").arg( X,0,16 ) );
             loadRegFromMemory( X );
+            qDebug() << "exit from      loadRegFromMemory( X );";
             break;
         case 0x75: //Fx75 LD R, Vx Сохранить регистры V0 - Vx в пользовательских флагах [RPL](http://en.wikipedia.org/wiki/RPL_(programming_language))
             asmTextString.append(QString("LD R, V%1 \t ; Save registers {V0, V%1} in the users flag  [RPL](http://en.wikipedia.org/wiki/RPL_(programming_language)").arg( X,0,16 ) );
@@ -425,7 +438,9 @@ quint16 Chip8Emu::getRegister(quint8 m_reg)
 {
     if (m_reg <= REG_VF)
     {
+#ifdef
         return m_regs.at(m_reg) ;
+
     }
     return 0x0;
 }
@@ -468,7 +483,8 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
     bool existPixel;
     quint8 maxLine;
     quint8 drw;
-    quint16 idx=0;
+    quint16 idx =0;
+    quint16 m_regI = getRegI();
 
     maxLine = (( 0 == n ) | ( n > 16 ) ) ? 16 : n ; // check how many rows draw.
 
@@ -476,16 +492,39 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
     {
         for (int row = 0; row < maxLine; ++row)
         {
-            drw = m_memory.at(regI+row);
+#ifdef DEBUG
+            if ( m_regI +row < m_memory.size() )
+            {
+                drw = m_memory.at( m_regI +row );
+            }
+            else
+            {
+                qDebug() << "void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n) Index out of range:" << (m_regI +row) << " m_memory.size():" << m_memory.size();
+            }
+#else
+            drw = m_memory.at( m_regI +row );
+#endif
             for (int col = 0; col < 8; ++col)
             {
                 newPixel = drw  & (1 << (7 - col));
                 idx = getIndex ( (vx + col), (vy + row ));
+#ifdef DEBUG
+                if ( idx < m_screen.size() )
+                {
+                    existPixel = m_screen.testBit( idx );
+                }
+                else
+                {
+                    qDebug() << "void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n) Index (m_screen) out of range:" << (idx) << " m_screen.size():" << m_screen.size();
+                }
+#else
                 existPixel = m_screen.testBit( idx );
+#endif
                 if ( existPixel )
                 {
                     setRegister( REG_VF, 0x1);
                 }
+
                 m_screen.setBit( idx, (existPixel ^ newPixel) );
             }
         }
@@ -507,7 +546,7 @@ void Chip8Emu::initDevice()
     m_regs.fill(0x0,16);
 
     m_stack.clear();
-    m_screen.fill(false, DISPLAY_X * DISPLAY_Y);
+    m_screen =  QBitArray(DISPLAY_X * DISPLAY_Y,false);
     m_keys.fill(false, KEY_PAD);   // All keys unPressed
     m_ExtendedMode = false;
     m_ElapsedTime = 0;
@@ -614,25 +653,48 @@ void Chip8Emu::saveBCDRegToI(quint8 m_reg_val)
 
 void Chip8Emu::saveRegToMemory(quint8 m_reg_val)
 {
+    //qDebug()<< "Chip8Emu::saveRegToMemory() " << "reg_I:" << getRegI() << " m_reg_val:" <<m_reg_val;
     if (m_reg_val <= REG_VF)
     {
         quint8 idx = getRegI();
         for (int i=0; i<=m_reg_val; ++i)
         {
+#ifdef DEBUG
+            if ( ( idx+i ) < m_memory.size() )
+            {
+                m_memory[idx + i] = getRegister( i );
+            }
+            else
+            {
+                qDebug() << "Chip8Emu::saveRegToMemory(quint8 m_reg_val) ERROR: index out of range :"<< (idx+i);
+            }
+#else
             m_memory[idx + i] = getRegister( i );
+#endif
         }
     }
 }
 
 void Chip8Emu::loadRegFromMemory(quint8 m_reg_val)
 {
-    if (m_reg_val <= REG_VF)
+    qDebug() <<"Chip8Emu::loadRegFromMemory "<< "reg_I :"<< getRegI();
+
+    quint16 idx = getRegI();
+
+    for (int i=0; i<=m_reg_val; ++i)
     {
-        quint16 idx = getRegI();
-        for (int i=0; i<=m_reg_val; ++i)
+#ifdef DEBUG
+        if ( ( idx+i ) < m_memory.size() )
         {
             setRegister(i, m_memory.at(idx + i) );
         }
+        else
+        {
+            qDebug() << "Chip8Emu::loadRegFromMemory(quint8 m_reg_val) ERROR: index out of range :"<< (idx+i);
+        }
+#else
+        setRegister(i, m_memory.at(idx + i) );
+#endif
     }
 }
 
