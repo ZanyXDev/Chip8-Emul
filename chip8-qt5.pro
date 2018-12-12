@@ -33,5 +33,6 @@ SOURCES = \
     src/chip8emu.cpp \
     src/cpuboxwidget.cpp
 
-CONFIG += console
-
+CONFIG += \
+    console \
+    c++11
