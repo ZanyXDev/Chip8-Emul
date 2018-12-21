@@ -12,7 +12,7 @@ Chip8Emu::Chip8Emu(QObject *parent)
 void Chip8Emu::loadData2Memory(QByteArray &data)
 {
     initDevice();
-    //qDebug() << "load: " << data.size() << " bytes";
+
     if ( !data.isEmpty() &&
          ( data.size() <= RAM_SIZE - START_ADDR)  )
     {
@@ -40,23 +40,21 @@ void Chip8Emu::stopEmulation()
 
 void Chip8Emu::executeNextOpcode()
 {
-    qDebug() << "PC:" << PC;
     if (PC > m_memory.size() - 2)
     {
         emit finishExecute();
         return;
     }
 
-
     QString asmTextString;
 
-    unsigned short opCode  = ( (m_memory.at(PC) & 0x00FF) << 8 ) | ( m_memory.at(PC+1) & 0x00FF) ;
-    unsigned short HI  = (opCode & 0xF000) >> 12;
-    unsigned short LO  = (opCode & 0x000F);
-    unsigned short X   = (opCode & 0x0F00) >> 8;
-    unsigned short Y   = (opCode & 0x00F0) >> 4;
-    unsigned short KK  = (opCode & 0x00FF);
-    unsigned short NNN = (opCode & 0x0FFF);
+    quint16 opCode  = ( (m_memory.at(PC) & 0x00FF) << 8 ) | ( m_memory.at(PC+1) & 0x00FF) ;
+    quint8  HI  = (opCode & 0xF000) >> 12;
+    quint8  LO  = (opCode & 0x000F);
+    quint8  X   = (opCode & 0x0F00) >> 8;
+    quint8  Y   = (opCode & 0x00F0) >> 4;
+    quint8  KK  = (opCode & 0x00FF);
+    quint16 NNN = (opCode & 0x0FFF);
 
     switch  ( HI )
     {
@@ -299,8 +297,7 @@ void Chip8Emu::executeNextOpcode()
         if ( KK == 0x9E)
         {
             // Ex9E SKP Vx Пропустить следующую команду если клавиша, номер которой хранится в регистре Vx, нажата
-            asmTextString.append(QString("SKP V%1 \t ; Skip next instruction if key number (save register V%1) pressed ").arg( X,0,16 ) );
-            //qDebug() << "SKP V" << getRegister( X ) << " ; Skip next instruction if key number (save register V" << getRegister( X )<< ") pressed";
+            asmTextString.append(QString("SKP V%1 \t ; Skip next instruction if key number (save register V%1) pressed ").arg( X,0,16 ) );            
             if (m_keys.at( getRealKey ( getRegister( X ) )))
             {
                 PC+=2;
@@ -309,8 +306,7 @@ void Chip8Emu::executeNextOpcode()
         if ( KK == 0xA1)
         {
             // ExA1 SKNP Vx Пропустить следующую команду если клавиша, номер которой хранится в регистре Vx, не нажата
-            asmTextString.append(QString("SKNP V%1 \t ; Skip next instruction if key number (save register V%1) not pressed ").arg( X,0,16 ) );
-            //qDebug() << "SKNP V" << getRegister( X ) << " ; Skip next instruction if key number (save register V" << getRegister( X )<< ") not pressed";
+            asmTextString.append(QString("SKNP V%1 \t ; Skip next instruction if key number (save register V%1) not pressed ").arg( X,0,16 ) );            
             if (!m_keys.at( getRealKey ( getRegister( X ) )))
             {
                 PC+=2;
@@ -362,14 +358,12 @@ void Chip8Emu::executeNextOpcode()
             asmTextString.append(QString("LD F, V%1 \t ; Show sprite font ").arg( X,0,16 ) );
 
 #ifdef DEBUG
-        {
-            quint32 res;
+        {            
             quint16 curRegValue = getRegister( X );
-
-            res = curRegValue * SMALL_FONT_SIZE;
-
+            quint16 res = curRegValue * SMALL_FONT_SIZE;
             setRegI( res );
-            qDebug() << "Register " << X << " has value:" << curRegValue << " new value register I:" << res;
+
+            qDebug() << "[opCode]"<< opCode <<" case 0x29: register " << X << " has value:" << curRegValue << " new value register I:" << res;
         }
 
 #else
@@ -392,8 +386,7 @@ void Chip8Emu::executeNextOpcode()
             break;
         case 0x65: // Fx65 LD Vx, [I] Загрузить значения регистров от V0 до Vx из памяти, начиная с адреса находящегося в I
             asmTextString.append(QString("LD V%1, [I] \t ; Load registers {V0, V%1} from memory, start address = register I ").arg( X,0,16 ) );
-            loadRegFromMemory( X );
-            qDebug() << "exit from      loadRegFromMemory( X );";
+            loadRegFromMemory( X );            
             break;
         case 0x75: //Fx75 LD R, Vx Сохранить регистры V0 - Vx в пользовательских флагах [RPL](http://en.wikipedia.org/wiki/RPL_(programming_language))
             asmTextString.append(QString("LD R, V%1 \t ; Save registers {V0, V%1} in the users flag  [RPL](http://en.wikipedia.org/wiki/RPL_(programming_language)").arg( X,0,16 ) );
@@ -409,8 +402,9 @@ void Chip8Emu::executeNextOpcode()
         asmTextString.append(QString("\t ;Don't decode ERROR"));
         break;
     }
-
+#ifdef DEBUG
     qDebug() << QString("0x%1: %2").arg(PC,0,16).arg(asmTextString);
+#endif
     emit showDecodeOpCode ( QString("0x%1:\t%2\t%3").arg(PC,0,16).arg(opCode,0,16).arg(asmTextString) );
     createMessage();
     PC+=2;
@@ -427,37 +421,48 @@ void Chip8Emu::decreaseTimers()
 
 void Chip8Emu::setRegister(quint8 m_reg, quint8 m_value)
 {
+#ifdef DEBUG
+    qDebug()<< "Chip8Emu::setRegister(quint8 ["<< m_reg << "] , quint8 m_value[" << m_value << " ]";
+#endif
     if (m_reg < 16)
     {
         m_regs[m_reg] = m_value ;
     }
-
 }
 
 quint16 Chip8Emu::getRegister(quint8 m_reg)
 {
+#ifdef DEBUG
+    qDebug()<< "Chip8Emu::getRegister(quint8 m_reg["<< m_reg << "]): " << m_regs.at(m_reg);
+#endif
+
+    quint16 val = 0;
     if (m_reg <= REG_VF)
     {
-#ifdef
-        return m_regs.at(m_reg) ;
-
+        val =  m_regs.at(m_reg) ;
     }
-    return 0x0;
+    return val;
 }
 
 void Chip8Emu::setRegI(quint16 m_value)
-{
+{    
+#ifdef DEBUG
+    qDebug() << QString("[Chip8Emu::setRegI] current I value:%1 new I value:%2").arg(regI,0,16).arg(m_value,0,16);
+#endif
     regI = m_value;
 }
 
 quint16 Chip8Emu::getRegI()
 {
+#ifdef DEBUG
+    qDebug() << QString("[Chip8Emu::getRegI] current I value:%1").arg(regI,0,16);
+#endif
     return regI;
 }
 
 quint16 Chip8Emu::getIndex(quint8 x, quint8 y)
 {
-    quint16 val = x + (y*DISPLAY_X);
+    quint16 val = x + ( y*DISPLAY_X );
     return ( val > MAX_DISPLAY_SIZE ) ? MAX_DISPLAY_SIZE : val;
 }
 
