@@ -47,7 +47,7 @@ private:
     QLineEdit* vfLED;
 
     QLineEdit* ILED;
-    QLineEdit* SPLED;
+    QLineEdit* PCLED;
     QLineEdit* delayTimerLED;
     QLineEdit* soundTimerLED;
     QTextEdit* stackTEdit;

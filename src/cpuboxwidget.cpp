@@ -157,9 +157,9 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         soundTimerLED->setToolTip( "0.0.0.0.0.0.0.0" );
         soundTimerLED->setEnabled( false );
 
-        SPLED = new QLineEdit( ("0x0") );
-        SPLED->setToolTip( "0.0.0.0.0.0.0.0" );
-        SPLED->setEnabled( false );
+        PCLED = new QLineEdit( ("0x0") );
+        PCLED->setToolTip( "0.0.0.0.0.0.0.0" );
+        PCLED->setEnabled( false );
 
         // TODO set width for editor
         stackTEdit = new QTextEdit();
@@ -169,7 +169,7 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         formLayout->addRow(tr("Register I:"), ILED);
         formLayout->addRow(tr("Delay timer:"), delayTimerLED);
         formLayout->addRow(tr("Sound timer:"), soundTimerLED);
-        formLayout->addRow(tr("SP counter:"), SPLED);
+        formLayout->addRow(tr("PC:"), PCLED);
         formLayout->addRow(tr("Stacks:"), stackTEdit);
     }
 
@@ -279,14 +279,20 @@ void CPUBoxWidget::showValues(bool flag)
         ILED->setText( QString("0x%1").arg(regI,0,16) );
         ILED->setToolTip( hexToBinaryString(regI) );
 
-        SPLED->setText( QString("0x%1").arg(PC,0,16) );
-        SPLED->setToolTip( hexToBinaryString(PC) );
+        PCLED->setText( QString("0x%1").arg(PC,0,16) );
+        PCLED->setToolTip( hexToBinaryString(PC) );
 
         delayTimerLED->setText( QString("0x%1").arg(delay_timer,0,16) );
         delayTimerLED->setToolTip( hexToBinaryString( delay_timer) );
 
         soundTimerLED->setText( QString("0x%1").arg( sound_timer,0,16) );
         soundTimerLED->setToolTip( hexToBinaryString( sound_timer) );
+
+
+        stackTEdit->clear();
+        foreach (const quint16 m_val, m_stack) {
+            stackTEdit->append( QString("0x%1").arg( m_val,0,16));
+        }
     }
 }
 
