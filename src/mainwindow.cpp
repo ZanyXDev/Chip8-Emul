@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     createGUI();
     createStatusBar();
     createConnection();
+
 }
 
 // -------------------------------------- PUBLIC SLOTS ---------------------------------------
@@ -40,20 +41,23 @@ void MainWindow::fileOpen()
                                                     "",
                                                     tr("Chip-8 game files (*.ch8)"),
                                                     &selectedFilter);
-    if (fileName.isEmpty()) {
+    if (fileName.isEmpty())
+    {
         return;
     }
 
     QFile file(fileName);
-    QByteArray tmp;
 
-    if (!file.open(QIODevice::ReadOnly)) {
+
+    if (!file.open(QIODevice::ReadOnly))
+    {
         return;
     }
 
-    tmp = file.readAll();
+    QByteArray tmp = file.readAll();
 
-    if (tmp.isEmpty()){
+    if (tmp.isEmpty())
+    {
         return;
     }
 
@@ -69,39 +73,7 @@ void MainWindow::readyToWork(bool flag)
     //    stopGameBtn->setEnabled( flag );
 }
 
-// -------------------------------------------------------------------------------------------
-//void MainWindow::createActions()
-//{
-//    QToolBar *mainToolBar = addToolBar(tr("File"));
 
-//    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-//    QAction *fileLoadAct = fileMenu->addAction(tr("&Load ROM"), this, &MainWindow::fileOpen);
-//    fileLoadAct->setShortcuts(QKeySequence::Open);
-//    fileLoadAct->setStatusTip(tr("Load ROM from file..."));
-//    fileMenu->addSeparator();
-//    mainToolBar->addAction(fileLoadAct);
-
-//    QAction *quitAct = fileMenu->addAction(tr("&Quit"), this, &QWidget::close);
-//    quitAct->setShortcuts(QKeySequence::Quit);
-//    quitAct->setStatusTip(tr("Quit the application"));
-
-//    menuBar()->addSeparator();
-//    QMenu *gameMenu = menuBar()->addMenu(tr("&Game"));
-
-//    newGameAct = new QAction(tr("&Start game"),this);
-//    newGameAct->setStatusTip(tr("Start new game"));
-//    newGameAct->setEnabled( false );
-//    gameMenu->addAction(newGameAct);
-//    menuBar()->addSeparator();
-
-//    viewMenu = menuBar()->addMenu(tr("&View"));
-
-//    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
-//    //QAction *aboutAct = helpMenu->addAction(tr("&About"), this, &MainWindow::about);
-//    //aboutAct->setStatusTip(tr("Show the application's About box"));
-//    QAction *aboutQtAct = helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
-//    aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
-//}
 
 void MainWindow::setupFileActions()
 {
@@ -124,7 +96,7 @@ void MainWindow::setupGameActions()
     QMenu *menu = menuBar()->addMenu(tr("&Game"));
 
     QAction *actionStart = menu->addAction(style()->standardIcon(QStyle::SP_MediaPlay),
-                                          tr("&Start..."), m_emul,&Chip8Emu::startEmulation);
+                                           tr("&Start..."), m_emul,&Chip8Emu::startEmulation);
     tb->addAction( actionStart );
     menu->addAction( actionStart );
 
@@ -137,6 +109,7 @@ void MainWindow::setupGameActions()
                                           tr("&Stop..."), m_emul,&Chip8Emu::stopEmulation);
     tb->addAction( actionStop );
     menu->addAction( actionStop );
+
 }
 
 void MainWindow::setupOtherActions()
@@ -183,7 +156,7 @@ void MainWindow::createGUI()
 
 void MainWindow::createConnection()
 {
- /*
+    /*
     connect(newGameAct, &QAction::triggered, this, &MainWindow::startGame);
     connect(m_emul,&Chip8Emu::ReadyToWork,this,&MainWindow::readyToWork);
     connect(m_emul,&Chip8Emu::showTime,this,&);
@@ -192,7 +165,6 @@ void MainWindow::createConnection()
     connect(m_emul,&Chip8Emu::updateScreen,m_screen,&Screen::updateScreen);
     connect(this,&MainWindow::changeKeyState,m_emul,&Chip8Emu::changeKeyState);
     connect(m_emul,&Chip8Emu::showDecodeOpCode,textListing,&QTextEdit::append);
-
     connect(m_emul,&Chip8Emu::updateRegValues,m_debugCPU,&CPUBoxWidget::updateRegValues);
 }
 

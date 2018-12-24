@@ -16,6 +16,7 @@
 
 #ifdef DEBUG
 #include <QTime>
+#include <QDebug>
 #endif
 
 class Chip8Emu : public QObject
@@ -29,7 +30,7 @@ signals:
     void updateScreen( QBitArray screen );
     void finishExecute();
     void showDecodeOpCode( const QString &asm_txt );
-    void updateRegValues(QByteArray msg);
+    void updateRegValues(QByteArray &msg);
 
 #ifdef DEBUG
     void showTime(const QString &m_time);
@@ -109,11 +110,11 @@ private:
 
     void createMessage();
     QTimer m_timer;
+    // FIXME memory, registers and stack need convert to QModel
     QByteArray m_memory;    // 4k ram memory
-    QByteArray m_regs;      // 16 registers 8bit size;
+    QVector<quint8> m_regs;      // 16 registers 8bit size;
     QByteArray m_smallFont; // size 16x5 small font
-    QByteArray m_bigFont;   // size 16x10 big font
-
+    QByteArray m_bigFont;   // size 16x10 big font    
     QVector<quint16> m_stack;     // deep 16 levels;
     QBitArray m_screen;
     QBitArray m_keys;

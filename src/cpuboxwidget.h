@@ -15,6 +15,7 @@
 #include <QCheckBox>
 #include <QByteArray>
 #include <QDataStream>
+#include "mydefs.h"
 
 class CPUBoxWidget : public QWidget
 {
@@ -47,15 +48,22 @@ private:
     QLineEdit* vfLED;
 
     QLineEdit* ILED;
-    QLineEdit* SPLED;
+    QLineEdit* ILED_0;
+    QLineEdit* ILED_1;
+    QLineEdit* ILED_2;
+
+    QLineEdit* PCLED;
     QLineEdit* delayTimerLED;
     QLineEdit* soundTimerLED;
     QTextEdit* stackTEdit;
     QCheckBox* showAsBinaryCHB;
-    QByteArray m_regs;      // 16 registers 8bit size;
+    QVector<quint8> m_regs;      // 16 registers 8bit size;
     QVector<quint16> m_stack;     // deep 16 levels;
     quint16 PC;             // mem offset counter
     quint16 regI;           // 16bit address register I
+    quint8 regI_0;         // 16bit address Memory [ register I ]
+    quint8 regI_1;         // 16bit address Memory [ register I+1 ]
+    quint8 regI_2;         // 16bit address Memory [ register I+2 ]
     quint8 delay_timer;     // 8bit delay timer;
     quint8 sound_timer;     // 8bit sound timer;
 };
