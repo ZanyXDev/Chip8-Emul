@@ -361,9 +361,9 @@ void Chip8Emu::executeNextOpcode()
         {            
             quint16 curRegValue = getRegister( X );
             quint16 res = curRegValue * SMALL_FONT_SIZE;
-            setRegI( res );
+            qDebug() << Q_FUNC_INFO << "[opCode]"<< opCode <<" case 0x29: register " << X << " has value:" << curRegValue << " new value register I:" << res;
 
-            qDebug() << "[opCode]"<< opCode <<" case 0x29: register " << X << " has value:" << curRegValue << " new value register I:" << res;
+            setRegI( res );            
         }
 
 #else
@@ -422,7 +422,7 @@ void Chip8Emu::decreaseTimers()
 void Chip8Emu::setRegister(quint8 m_reg, quint8 m_value)
 {
 #ifdef DEBUG
-    qDebug()<< "Chip8Emu::setRegister(quint8 ["<< m_reg << "] , quint8 m_value[" << m_value << " ]";
+    qDebug()<< Q_FUNC_INFO<< "m_reg ["<< m_reg << "] ,  m_value[" << m_value << " ]";
 #endif
     if (m_reg < 16)
     {
@@ -433,7 +433,7 @@ void Chip8Emu::setRegister(quint8 m_reg, quint8 m_value)
 quint16 Chip8Emu::getRegister(quint8 m_reg)
 {
 #ifdef DEBUG
-    qDebug()<< "Chip8Emu::getRegister(quint8 m_reg["<< m_reg << "]): " << m_regs.at(m_reg);
+    qDebug() << Q_FUNC_INFO << " m_reg["<< m_reg << "]): " << m_regs.at(m_reg);
 #endif
 
     quint16 val = 0;
@@ -447,7 +447,7 @@ quint16 Chip8Emu::getRegister(quint8 m_reg)
 void Chip8Emu::setRegI(quint16 m_value)
 {    
 #ifdef DEBUG
-    qDebug() << QString("[Chip8Emu::setRegI] current I value:%1 new I value:%2").arg(regI,0,16).arg(m_value,0,16);
+    qDebug()  << Q_FUNC_INFO << QString(" current I value:%1 new I value:%2").arg(regI,0,16).arg(m_value,0,16);
 #endif
     regI = m_value;
 }
@@ -455,7 +455,7 @@ void Chip8Emu::setRegI(quint16 m_value)
 quint16 Chip8Emu::getRegI()
 {
 #ifdef DEBUG
-    qDebug() << QString("[Chip8Emu::getRegI] current I value:%1").arg(regI,0,16);
+    qDebug()  << Q_FUNC_INFO << QString(" current I value:%1").arg(regI,0,16);
 #endif
     return regI;
 }
@@ -504,7 +504,7 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
             }
             else
             {
-                qDebug() << "void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n) Index out of range:" << (m_regI +row) << " m_memory.size():" << m_memory.size();
+                qDebug()  << Q_FUNC_INFO << " Index out of range:" << (m_regI +row) << " m_memory.size():" << m_memory.size();
             }
 #else
             drw = m_memory.at( m_regI +row );
@@ -520,7 +520,7 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
                 }
                 else
                 {
-                    qDebug() << "void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n) Index (m_screen) out of range:" << (idx) << " m_screen.size():" << m_screen.size();
+                    qDebug()  << Q_FUNC_INFO << " Index (m_screen) out of range:" << (idx) << " m_screen.size():" << m_screen.size();
                 }
 #else
                 existPixel = m_screen.testBit( idx );
@@ -548,7 +548,7 @@ void Chip8Emu::initDevice()
     sound_timer = 0;               // clear sound timer;
     opcode_count = 0 ;
     m_memory.fill(0x0,RAM_SIZE);   // clear 4k ram memory
-    m_regs.fill(0x0,16);
+    m_regs.fill(0x0,MAX_REG);
 
     m_stack.clear();
     m_screen =  QBitArray(DISPLAY_X * DISPLAY_Y,false);
@@ -707,13 +707,28 @@ void Chip8Emu::createMessage()
 {
     QByteArray m_msg;
     QDataStream out(&m_msg,QIODevice::WriteOnly);
-    out.setVersion( QDataStream::Qt_5_10 );
-    out << m_regs;
+    out.setVersion( QDataStream::Qt_5_10 );    
     out << PC;
     out << regI;
+    out << m_memory.at( regI );
+    out << m_memory.at( regI+1 );
+    out << m_memory.at( regI+2 );
     out << delay_timer;
     out << sound_timer;
     out << m_stack;
+    out << m_regs;
+
+//    out << m_stack.size();
+//    qDebug()<< Q_FUNC_INFO << "m_stack.size()" <<m_stack.size();
+//    foreach (const quint16 m_val, m_stack) {
+//        out << m_val;
+//    }
+
+//    out << m_regs.size();
+//    foreach (const quint8 m_val, m_regs) {
+//        out << m_val;
+//    }
+
     emit updateRegValues( m_msg );
 }
 
