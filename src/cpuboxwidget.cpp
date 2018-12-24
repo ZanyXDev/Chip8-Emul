@@ -1,8 +1,10 @@
 ﻿#include "cpuboxwidget.h"
 
+//TODO need change recived data from message to DataModel
+
 CPUBoxWidget::CPUBoxWidget(QWidget *parent)
     : QWidget(parent)
-{    
+{
     QVBoxLayout* vbox_1 = new QVBoxLayout();
 
     QGridLayout * grLayout = new QGridLayout ();
@@ -149,6 +151,18 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         ILED->setToolTip( "0.0.0.0.0.0.0.0" );
         ILED->setEnabled( false );
 
+        ILED_0 = new QLineEdit( ("0x0") );
+        ILED_0->setToolTip( "0.0.0.0.0.0.0.0" );
+        ILED_0->setEnabled( false );
+
+        ILED_1 = new QLineEdit( ("0x0") );
+        ILED_1->setToolTip( "0.0.0.0.0.0.0.0" );
+        ILED_1->setEnabled( false );
+
+        ILED_2 = new QLineEdit( ("0x0") );
+        ILED_2->setToolTip( "0.0.0.0.0.0.0.0" );
+        ILED_2->setEnabled( false );
+
         delayTimerLED = new QLineEdit( ("0x0") );
         delayTimerLED->setToolTip( "0.0.0.0.0.0.0.0" );
         delayTimerLED->setEnabled( false );
@@ -167,6 +181,10 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         stackTEdit->setText(tr("0x000"));
 
         formLayout->addRow(tr("Register I:"), ILED);
+        formLayout->addRow(tr("Mem[ reg I]:"), ILED_0);
+        formLayout->addRow(tr("Mem[ reg I+1]:"), ILED_1);
+        formLayout->addRow(tr("Mem[ reg I+2]:"), ILED_2);
+
         formLayout->addRow(tr("Delay timer:"), delayTimerLED);
         formLayout->addRow(tr("Sound timer:"), soundTimerLED);
         formLayout->addRow(tr("PC:"), PCLED);
@@ -186,7 +204,7 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
     hLine->setFrameShape(QFrame::HLine);
     hLine->setFrameShadow(QFrame::Sunken);
 
-    showAsBinaryCHB = new QCheckBox(tr("Show value as binary"));
+    showAsBinaryCHB = new QCheckBox(tr("Show value's as binary"));
     // TODO add private slots for show register's value as binary or hexdecimal
     vbox_1->addLayout( hbox_1);
     vbox_1->addWidget( hLine );
@@ -200,14 +218,38 @@ void CPUBoxWidget::updateRegValues(QByteArray msg)
     QDataStream in(&msg,QIODevice::ReadOnly);
     if (in.version() == QDataStream::Qt_5_10)
     {
-        in >> m_regs;
+        m_regs.fill(0x0,MAX_REG);
+        m_stack.clear();
+
         in >> PC;
         in >> regI;
+        in >> regI_0;
+        in >> regI_1;
+        in >> regI_2;
         in >> delay_timer;
         in >> sound_timer;
         in >> m_stack;
-        showValues( showAsBinaryCHB->isChecked() );
+        in >> m_regs;
+
+        //        in >> vector_size;
+        //        m_stack.clear();
+
+        //        for (int i=0;i<vector_size;i++)
+        //        {
+        //            in >> val_16;
+        //            m_stack.append( val_16 );
+        //        }
+
+        //        in >> vector_size;
+        //        m_regs.clear();
+        //        for (int i=0;i<vector_size;i++)
+        //        {
+        //            in >> val_8;
+        //            m_regs.append( val_8 );
+        //        }
+
     }
+    showValues( showAsBinaryCHB->isChecked() );
 }
 
 QString CPUBoxWidget::hexToBinaryString(quint8 value)
