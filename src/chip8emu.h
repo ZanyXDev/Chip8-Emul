@@ -11,8 +11,10 @@
 #include <QRandomGenerator>
 #include <QTimer>
 #include <QDataStream>
+#include <QAbstractListModel>
 
 #include "mydefs.h"
+
 
 #ifdef DEBUG
 #include <QTime>
@@ -24,6 +26,8 @@ class Chip8Emu : public QObject
     Q_OBJECT
 public:
     explicit Chip8Emu(QObject *parent = nullptr);
+
+    void setModel(QAbstractListModel *model);
 
 signals:
     void ReadyToWork( bool flag);
@@ -112,7 +116,7 @@ private:
     QTimer m_timer;
     // FIXME memory, registers and stack need convert to QModel
     QByteArray m_memory;    // 4k ram memory
-    QVector<quint8> m_regs;      // 16 registers 8bit size;
+    //QVector<quint8> m_regs;      // 16 registers 8bit size;
     QByteArray m_smallFont; // size 16x5 small font
     QByteArray m_bigFont;   // size 16x10 big font    
     QVector<quint16> m_stack;     // deep 16 levels;
@@ -131,6 +135,7 @@ private:
 
     bool m_ExtendedMode;    // Chip8 (false) or SuperChip (true) mode
 
+    QAbstractListModel *m_modelReg;
 };
 
 #endif // CHIP8EMU_H
