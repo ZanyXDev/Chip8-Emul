@@ -12,6 +12,8 @@ class RegisterModel : public QAbstractListModel
 public:
     explicit RegisterModel(const QList<quint8> &list,QObject *parent = nullptr);
 
+    RegisterModel(quint8 m_size, QObject *parent = nullptr);
+
     QVariant data (const QModelIndex& index, int nRole) const;
 
     bool setData(const QModelIndex& index,
@@ -25,6 +27,8 @@ public:
                         int nRole = Qt::DisplayRole) const;
 
     Qt::ItemFlags flags (const QModelIndex &index) const;
+
+
 
 signals:
 

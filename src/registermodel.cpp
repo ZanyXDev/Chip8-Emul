@@ -1,10 +1,22 @@
 #include "registermodel.h"
+#include "registermodel.h"
 
 RegisterModel::RegisterModel(const QList<quint8> &list, QObject *parent)
     : QAbstractListModel(parent)
     , m_list(list)
 {
 
+}
+
+RegisterModel::RegisterModel(quint8 m_size, QObject *parent)
+    : QAbstractListModel(parent)
+{
+    m_list.clear();
+
+    for (int i=0; i< m_size;i++)
+    {
+        m_list.append( 0 );
+    }
 }
 
 QVariant RegisterModel::data(const QModelIndex &index, int nRole) const
@@ -31,6 +43,10 @@ bool RegisterModel::setData(const QModelIndex &index, const QVariant &value, int
 
 int RegisterModel::rowCount(const QModelIndex &parent) const
 {
+    if ( parent.isValid() )
+    {
+
+    }
     return m_list.size();
 }
 
@@ -52,3 +68,4 @@ Qt::ItemFlags RegisterModel::flags(const QModelIndex &index) const
             ? ( flags | Qt::ItemIsEditable )
             : flags;
 }
+
