@@ -1,8 +1,5 @@
 #include "mainwindow.h"
 
-
-
-
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     QDesktopWidget desktop;
@@ -15,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
 
+    model = new RegisterModel( MAX_REG );
     m_emul = new Chip8Emu();
 
     //createActions();
@@ -25,6 +23,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     createStatusBar();
     createConnection();
 
+    m_emul->setModel( model );
+    m_debugCPU->setModel( model);
 }
 
 // -------------------------------------- PUBLIC SLOTS ---------------------------------------

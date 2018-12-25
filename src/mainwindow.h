@@ -24,7 +24,7 @@
 #include "chip8emu.h"
 #include "mydefs.h"
 #include "cpuboxwidget.h"
-
+#include "registermodel.h"
 
 class MainWindow : public QMainWindow
 {
@@ -75,6 +75,7 @@ private:
     Screen* m_screen;
     CPUBoxWidget *m_debugCPU;
     const QString rsrcPath = ":res/images/";
+    QAbstractListModel *model;
 };
 
 #endif // MAINWINDOW_H
