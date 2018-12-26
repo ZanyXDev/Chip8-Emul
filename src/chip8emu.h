@@ -47,7 +47,7 @@ private:
     void decreaseTimers();
 
     void setRegister(quint8 m_reg, quint8 m_value);
-    quint16 getRegister(quint8 m_reg);
+    quint8 getRegister(quint8 m_reg);
 
     void setRegI( quint16 m_value );
     quint16 getRegI();

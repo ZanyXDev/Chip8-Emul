@@ -423,23 +423,17 @@ void Chip8Emu::decreaseTimers()
 
 void Chip8Emu::setRegister(quint8 m_reg, quint8 m_value)
 {
-#ifdef DEBUG
-    qDebug()<< Q_FUNC_INFO<< "m_reg ["<< m_reg << "] ,  m_value[" << m_value << " ]";
-#endif
     if (m_reg < MAX_REG )
     {
         m_modelReg->setData( m_modelReg->index(m_reg), m_value,Qt::EditRole );
     }
 }
 
-quint16 Chip8Emu::getRegister(quint8 m_reg)
-{
-    quint8 m_res;
-    if (m_reg <  MAX_REG)
-    {
-        m_res =  m_modelReg->data( m_modelReg->index(m_reg),Qt::DisplayRole ).toInt();
-    }
-    return m_res;
+quint8 Chip8Emu::getRegister(quint8 m_reg)
+{    
+    return ( m_reg <  MAX_REG)
+            ? m_modelReg->data( m_modelReg->index(m_reg),Qt::EditRole ).toInt()
+            : 0;
 }
 
 void Chip8Emu::setRegI(quint16 m_value)
@@ -461,7 +455,9 @@ quint16 Chip8Emu::getRegI()
 quint16 Chip8Emu::getIndex(quint8 x, quint8 y)
 {
     quint16 val = x + ( y*DISPLAY_X );
-    return ( val > MAX_DISPLAY_SIZE ) ? MAX_DISPLAY_SIZE : val;
+    return ( val > MAX_DISPLAY_SIZE )
+            ? MAX_DISPLAY_SIZE
+            : val;
 }
 
 // -- Draw function
@@ -551,7 +547,7 @@ void Chip8Emu::initDevice()
     {
         for (int i=0; i<MAX_REG; i++ ) // clear model
         {
-            m_modelReg->setData(m_modelReg->index( i ), 0);
+            m_modelReg->setData(m_modelReg->index( i ), 0, Qt::EditRole );
         }
     }
 
@@ -636,12 +632,12 @@ quint8 Chip8Emu::getSumCF( quint8 x, quint8 y)
 
     if (val > 255)
     {
-        m_modelReg->setData(index, 1);
+        m_modelReg->setData(index, 1, Qt::EditRole);
 
     }
     else
     {
-        m_modelReg->setData(index, 0);
+        m_modelReg->setData(index, 0, Qt::EditRole);
     }
     return (val & 0x00FF);
 }
