@@ -9,8 +9,6 @@
 #include <QPaintEvent>
 #include <QPixmap>
 
-#include <QDebug>
-
 #include "mydefs.h"
 
 

@@ -2,24 +2,16 @@
 #define CHIP8EMU_H
 
 #include <QByteArray>
-#include <QObject>
-#include <QDebug>
 #include <QElapsedTimer>
 #include <QCoreApplication>
 #include <QBitArray>
 #include <QVector>
 #include <QRandomGenerator>
-#include <QTimer>
 #include <QDataStream>
 #include <QAbstractListModel>
-
+#include <QTimer>
 #include "mydefs.h"
 
-
-#ifdef DEBUG
-#include <QTime>
-#include <QDebug>
-#endif
 
 class Chip8Emu : public QObject
 {
