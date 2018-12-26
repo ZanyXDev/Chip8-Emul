@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
 
-    model = new RegisterModel( MAX_REG );
+    model = new RegisterModel( );
     m_emul = new Chip8Emu();
 
     //createActions();
