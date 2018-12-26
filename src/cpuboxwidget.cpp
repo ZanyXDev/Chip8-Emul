@@ -5,7 +5,9 @@
 CPUBoxWidget::CPUBoxWidget(QWidget *parent)
     : QWidget(parent)
 {
-    QVBoxLayout* vbox_1 = new QVBoxLayout();
+    mapper= new QDataWidgetMapper;
+
+    QVBoxLayout* mainVBoxLayout = new QVBoxLayout();
 
     QGridLayout * grLayout = new QGridLayout ();
     {
@@ -13,7 +15,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("V0:")),0,0);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),0,1 );
         v0LED = new QLineEdit( ("0x0") );
-        v0LED->setToolTip( "0.0.0.0.0.0.0.0" );
         v0LED->setEnabled( false );
 
 
@@ -23,7 +24,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("V1:")),1,0);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),1,1 );
         v1LED = new QLineEdit( ("0x0") );
-        v1LED->setToolTip( "0.0.0.0.0.0.0.0" );
         v1LED->setEnabled( false );
         grLayout->addWidget( v1LED,1,2 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),1,3 );
@@ -31,7 +31,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("V2:")),2,0);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),2,1 );
         v2LED = new QLineEdit( ("0x0") );
-        v2LED->setToolTip( "0.0.0.0.0.0.0.0" );
         v2LED->setEnabled( false );
         grLayout->addWidget( v2LED,2,2 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),2,3 );
@@ -39,7 +38,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("V3:")),3,0);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),3,1 );
         v3LED = new QLineEdit( ("0x0") );
-        v3LED->setToolTip( "0.0.0.0.0.0.0.0" );
         v3LED->setEnabled( false );
         grLayout->addWidget( v3LED,3,2 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),3,3 );
@@ -47,7 +45,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("V4:")),4,0);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),4,1 );
         v4LED = new QLineEdit( ("0x0") );
-        v4LED->setToolTip( "0.0.0.0.0.0.0.0" );
         v4LED->setEnabled( false );
         grLayout->addWidget( v4LED,4,2 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),4,3 );
@@ -55,7 +52,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("V5:")),5,0);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),5,1 );
         v5LED = new QLineEdit( ("0x0") );
-        v5LED->setToolTip( "0.0.0.0.0.0.0.0" );
         v5LED->setEnabled( false );
         grLayout->addWidget( v5LED,5,2 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),5,3 );
@@ -63,7 +59,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("V6:")),6,0);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),6,1 );
         v6LED = new QLineEdit( ("0x0") );
-        v6LED->setToolTip( "0.0.0.0.0.0.0.0" );
         v6LED->setEnabled( false );
         grLayout->addWidget( v6LED,6,2 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),6,3 );
@@ -71,7 +66,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("V7:")),7,0);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),7,1 );
         v7LED = new QLineEdit( ("0x0") );
-        v7LED->setToolTip( "0.0.0.0.0.0.0.0" );
         v7LED->setEnabled( false );
         grLayout->addWidget( v7LED,7,2 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),7,3 );
@@ -80,7 +74,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("V8:")),0,4);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),0,5 );
         v8LED = new QLineEdit( ("0x0") );
-        v8LED->setToolTip( "0.0.0.0.0.0.0.0" );
         v8LED->setEnabled( false );
         grLayout->addWidget( v8LED,0,6 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),0,7 );
@@ -88,7 +81,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("V9:")),1,4);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),1,5 );
         v9LED = new QLineEdit( ("0x0") );
-        v9LED->setToolTip( "0.0.0.0.0.0.0.0" );
         v9LED->setEnabled( false );
         grLayout->addWidget( v9LED,1,6 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),1,7 );
@@ -96,7 +88,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("Va:")),2,4);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),2,5 );
         vaLED = new QLineEdit( ("0x0") );
-        vaLED->setToolTip( "0.0.0.0.0.0.0.0" );
         vaLED->setEnabled( false );
         grLayout->addWidget( vaLED,2,6 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),2,7 );
@@ -104,7 +95,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("Vb:")),3,4);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),3,5 );
         vbLED = new QLineEdit( ("0x0") );
-        vbLED->setToolTip( "0.0.0.0.0.0.0.0" );
         vbLED->setEnabled( false );
         grLayout->addWidget( vbLED,3,6 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),3,7 );
@@ -112,7 +102,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("Vc:")),4,4);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),4,5 );
         vcLED = new QLineEdit( ("0x0") );
-        vcLED->setToolTip( "0.0.0.0.0.0.0.0" );
         vcLED->setEnabled( false );
         grLayout->addWidget( vcLED,4,6 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),4,7 );
@@ -120,7 +109,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("Vd:")),5,4);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),5,5 );
         vdLED = new QLineEdit( ("0x0") );
-        vdLED->setToolTip( "0.0.0.0.0.0.0.0" );
         vdLED->setEnabled( false );
         grLayout->addWidget( vdLED,5,6 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),5,7 );
@@ -128,7 +116,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("Ve:")),6,4);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),6,5 );
         veLED = new QLineEdit( ("0x0") );
-        veLED->setToolTip( "0.0.0.0.0.0.0.0" );
         veLED->setEnabled( false );
         grLayout->addWidget( veLED,6,6 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),6,7 );
@@ -136,7 +123,6 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         grLayout->addWidget(new QLabel(tr("Vf:")),7,4);
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),7,5 );
         vfLED = new QLineEdit( ("0x0") );
-        vfLED->setToolTip( "0.0.0.0.0.0.0.0" );
         vfLED->setEnabled( false );
         grLayout->addWidget( vfLED,7,6 );
         grLayout->addItem(new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored),7,7 );
@@ -200,17 +186,33 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
     hbox_1->addSpacerItem( new QSpacerItem(0,10,QSizePolicy::Expanding,QSizePolicy::Ignored) );
     hbox_1->addWidget( gb_Right );
 
-    QFrame* hLine = new QFrame();
-    hLine->setFrameShape(QFrame::HLine);
-    hLine->setFrameShadow(QFrame::Sunken);
+    mainVBoxLayout->addLayout( hbox_1 );
 
-    showAsBinaryCHB = new QCheckBox(tr("Show value's as binary"));
-    // TODO add private slots for show register's value as binary or hexdecimal
-    vbox_1->addLayout( hbox_1);
-    vbox_1->addWidget( hLine );
-    vbox_1->addWidget( showAsBinaryCHB );
+    this->setLayout(mainVBoxLayout);
 
-    this->setLayout(vbox_1);
+}
+
+void CPUBoxWidget::setModel(QAbstractListModel *m_model)
+{
+    mapper->setModel(m_model);
+    mapper->setOrientation(Qt::Vertical);
+    mapper->addMapping(v0LED, 0);
+    mapper->addMapping(v1LED, 1);
+    mapper->addMapping(v2LED, 2);
+    mapper->addMapping(v3LED, 3);
+    mapper->addMapping(v4LED, 4);
+    mapper->addMapping(v5LED, 5);
+    mapper->addMapping(v6LED, 6);
+    mapper->addMapping(v7LED, 7);
+    mapper->addMapping(v8LED, 8);
+    mapper->addMapping(v9LED, 9);
+    mapper->addMapping(vaLED, 10);
+    mapper->addMapping(vbLED, 11);
+    mapper->addMapping(vcLED, 12);
+    mapper->addMapping(vdLED, 13);
+    mapper->addMapping(veLED, 14);
+    mapper->addMapping(vfLED, 15);
+    mapper->toFirst();
 }
 
 void CPUBoxWidget::updateRegValues(QByteArray msg)
@@ -249,14 +251,10 @@ void CPUBoxWidget::updateRegValues(QByteArray msg)
         //        }
 
     }
-    showValues( showAsBinaryCHB->isChecked() );
+    // showValues( showAsBinaryCHB->isChecked() );
 }
 
-QString CPUBoxWidget::hexToBinaryString(quint8 value)
-{
-    QString result;
-    return result;
-}
+
 
 void CPUBoxWidget::showValues(bool flag)
 {
@@ -269,6 +267,7 @@ void CPUBoxWidget::showValues(bool flag)
     }
     else
     {
+/*
         // FIXME Databinding ????
         v0LED->setText( QString("0x%1").arg( m_regs.at(0),0,16) );
         v0LED->setToolTip( hexToBinaryString( m_regs.at(0) ) );
@@ -329,7 +328,7 @@ void CPUBoxWidget::showValues(bool flag)
 
         soundTimerLED->setText( QString("0x%1").arg( sound_timer,0,16) );
         soundTimerLED->setToolTip( hexToBinaryString( sound_timer) );
-
+*/
 
         stackTEdit->clear();
         foreach (const quint16 m_val, m_stack) {
