@@ -1,10 +1,10 @@
 #ifndef REGISTERMODEL_H
 #define REGISTERMODEL_H
 
-#include <QObject>
 #include <QAbstractListModel>
 #include <QList>
 #include <QVariant>
+#include "mydefs.h"
 
 class RegisterModel : public QAbstractListModel
 {
@@ -12,7 +12,7 @@ class RegisterModel : public QAbstractListModel
 public:
     explicit RegisterModel(const QList<quint8> &list,QObject *parent = nullptr);
 
-    RegisterModel(quint8 m_size, QObject *parent = nullptr);
+    RegisterModel(QObject *parent = nullptr);
 
     QVariant data (const QModelIndex& index, int nRole) const;
 
