@@ -65,7 +65,7 @@ QVariant RegisterModel::headerData(int nSection, Qt::Orientation orientation, in
 
     if ( orientation == Qt::Horizontal )
     {
-        return QString( tr("Registers") );
+        return QString( tr("REG") );
     }
     else
     {
@@ -132,7 +132,7 @@ Qt::ItemFlags RegisterModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags flags = QAbstractListModel::flags( index );
     return index.isValid()
-            ? ( flags | Qt::ItemIsEditable )
+            ? ( flags | Qt::ItemIsSelectable )
             : flags;
 }
 
