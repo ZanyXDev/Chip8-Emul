@@ -25,8 +25,12 @@ signals:
     void ReadyToWork( bool flag);
     void updateScreen( QBitArray screen );
     void finishExecute();
-    void showDecodeOpCode( const QString &asm_txt );
-    void updateRegValues(QByteArray &msg);
+    void showDecodeOpCode( const QString &asm_txt );    
+    void registerIChanged( quint16 value );
+    void pointerCodeChanged( quint16 value);
+    void delayTimerChanged( quint8 value );
+    void soundTimerChanged( quint8 value );
+    void memoryCellChanged( quint16 value_0, quint16 value_1, quint16 value_2 );
 
 #ifdef DEBUG
     void showTime(const QString &m_time);
@@ -104,7 +108,7 @@ private:
      */
     void loadRegFromMemory(quint8 m_reg_val);
 
-    void createMessage();
+
     QTimer m_timer;
     // FIXME memory, registers and stack need convert to QModel
     QByteArray m_memory;    // 4k ram memory
