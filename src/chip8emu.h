@@ -2,22 +2,16 @@
 #define CHIP8EMU_H
 
 #include <QByteArray>
-#include <QObject>
-#include <QDebug>
 #include <QElapsedTimer>
 #include <QCoreApplication>
 #include <QBitArray>
 #include <QVector>
 #include <QRandomGenerator>
-#include <QTimer>
 #include <QDataStream>
-
+#include <QAbstractListModel>
+#include <QTimer>
 #include "mydefs.h"
 
-#ifdef DEBUG
-#include <QTime>
-#include <QDebug>
-#endif
 
 class Chip8Emu : public QObject
 {
@@ -25,12 +19,18 @@ class Chip8Emu : public QObject
 public:
     explicit Chip8Emu(QObject *parent = nullptr);
 
+    void setModel(QAbstractListModel *model);
+
 signals:
     void ReadyToWork( bool flag);
     void updateScreen( QBitArray screen );
     void finishExecute();
-    void showDecodeOpCode( const QString &asm_txt );
-    void updateRegValues(QByteArray &msg);
+    void showDecodeOpCode( const QString &asm_txt );    
+    void registerIChanged( quint16 value );
+    void pointerCodeChanged( quint16 value);
+    void delayTimerChanged( quint8 value );
+    void soundTimerChanged( quint8 value );
+    void memoryCellChanged( quint16 value_0, quint16 value_1, quint16 value_2 );
 
 #ifdef DEBUG
     void showTime(const QString &m_time);
@@ -51,7 +51,7 @@ private:
     void decreaseTimers();
 
     void setRegister(quint8 m_reg, quint8 m_value);
-    quint16 getRegister(quint8 m_reg);
+    quint8 getRegister(quint8 m_reg);
 
     void setRegI( quint16 m_value );
     quint16 getRegI();
@@ -108,11 +108,11 @@ private:
      */
     void loadRegFromMemory(quint8 m_reg_val);
 
-    void createMessage();
+
     QTimer m_timer;
     // FIXME memory, registers and stack need convert to QModel
     QByteArray m_memory;    // 4k ram memory
-    QVector<quint8> m_regs;      // 16 registers 8bit size;
+    //QVector<quint8> m_regs;      // 16 registers 8bit size;
     QByteArray m_smallFont; // size 16x5 small font
     QByteArray m_bigFont;   // size 16x10 big font    
     QVector<quint16> m_stack;     // deep 16 levels;
@@ -131,6 +131,7 @@ private:
 
     bool m_ExtendedMode;    // Chip8 (false) or SuperChip (true) mode
 
+    QAbstractListModel *m_modelReg;
 };
 
 #endif // CHIP8EMU_H

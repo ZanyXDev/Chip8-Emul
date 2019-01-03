@@ -3,10 +3,12 @@
 Chip8Emu::Chip8Emu(QObject *parent)
     : QObject(parent)
 {
-    //FIXME need delete
-    initDevice();
-
     connect(&m_timer,&QTimer::timeout,this,&Chip8Emu::execute);
+}
+
+void Chip8Emu::setModel(QAbstractListModel *model)
+{
+    m_modelReg = model;
 }
 
 void Chip8Emu::loadData2Memory(QByteArray &data)
@@ -297,7 +299,7 @@ void Chip8Emu::executeNextOpcode()
         if ( KK == 0x9E)
         {
             // Ex9E SKP Vx Пропустить следующую команду если клавиша, номер которой хранится в регистре Vx, нажата
-            asmTextString.append(QString("SKP V%1 \t ; Skip next instruction if key number (save register V%1) pressed ").arg( X,0,16 ) );            
+            asmTextString.append(QString("SKP V%1 \t ; Skip next instruction if key number (save register V%1) pressed ").arg( X,0,16 ) );
             if (m_keys.at( getRealKey ( getRegister( X ) )))
             {
                 PC+=2;
@@ -306,7 +308,7 @@ void Chip8Emu::executeNextOpcode()
         if ( KK == 0xA1)
         {
             // ExA1 SKNP Vx Пропустить следующую команду если клавиша, номер которой хранится в регистре Vx, не нажата
-            asmTextString.append(QString("SKNP V%1 \t ; Skip next instruction if key number (save register V%1) not pressed ").arg( X,0,16 ) );            
+            asmTextString.append(QString("SKNP V%1 \t ; Skip next instruction if key number (save register V%1) not pressed ").arg( X,0,16 ) );
             if (!m_keys.at( getRealKey ( getRegister( X ) )))
             {
                 PC+=2;
@@ -340,10 +342,12 @@ void Chip8Emu::executeNextOpcode()
         case 0x15: // Fx15 LD DT, Vx Установить значение таймера задержки равным значению регистра Vx
             asmTextString.append(QString("LD DT, V%1 \t ; Set register DATA_TIMER = V%1 ").arg( X,0,16 ) );
             delay_timer = getRegister( X );
+            emit delayTimerChanged( delay_timer );
             break;
         case 0x18:// Fx18 LD ST, Vx Установить значение звукового таймера равным значению регистра Vx
             asmTextString.append(QString("LD ST, V%1 \t ; Set register SOUND_TIMER = V%1 ").arg( X,0,16 ) );
             sound_timer = getRegister( X );
+            emit soundTimerChanged( sound_timer );
             break;
         case 0x1E:
             // Fx1E ADD I, Vx Сложить значения регистров I и Vx, результат сохранить в I. Т.е. I = I + Vx
@@ -358,12 +362,12 @@ void Chip8Emu::executeNextOpcode()
             asmTextString.append(QString("LD F, V%1 \t ; Show sprite font ").arg( X,0,16 ) );
 
 #ifdef DEBUG
-        {            
+        {
             quint16 curRegValue = getRegister( X );
             quint16 res = curRegValue * SMALL_FONT_SIZE;
             qDebug() << Q_FUNC_INFO << "[opCode]"<< opCode <<" case 0x29: register " << X << " has value:" << curRegValue << " new value register I:" << res;
 
-            setRegI( res );            
+            setRegI( res );
         }
 
 #else
@@ -386,7 +390,7 @@ void Chip8Emu::executeNextOpcode()
             break;
         case 0x65: // Fx65 LD Vx, [I] Загрузить значения регистров от V0 до Vx из памяти, начиная с адреса находящегося в I
             asmTextString.append(QString("LD V%1, [I] \t ; Load registers {V0, V%1} from memory, start address = register I ").arg( X,0,16 ) );
-            loadRegFromMemory( X );            
+            loadRegFromMemory( X );
             break;
         case 0x75: //Fx75 LD R, Vx Сохранить регистры V0 - Vx в пользовательских флагах [RPL](http://en.wikipedia.org/wiki/RPL_(programming_language))
             asmTextString.append(QString("LD R, V%1 \t ; Save registers {V0, V%1} in the users flag  [RPL](http://en.wikipedia.org/wiki/RPL_(programming_language)").arg( X,0,16 ) );
@@ -406,8 +410,8 @@ void Chip8Emu::executeNextOpcode()
     qDebug() << QString("0x%1: %2").arg(PC,0,16).arg(asmTextString);
 #endif
     emit showDecodeOpCode ( QString("0x%1:\t%2\t%3").arg(PC,0,16).arg(opCode,0,16).arg(asmTextString) );
-    createMessage();
     PC+=2;
+    emit pointerCodeChanged( PC );
     return;
 }
 
@@ -416,40 +420,31 @@ void Chip8Emu::decreaseTimers()
     if (delay_timer > 0)
     {
         --delay_timer;
+        --sound_timer;
+        emit delayTimerChanged( delay_timer );
+        emit soundTimerChanged( sound_timer );
     }
 }
 
 void Chip8Emu::setRegister(quint8 m_reg, quint8 m_value)
 {
-#ifdef DEBUG
-    qDebug()<< Q_FUNC_INFO<< "m_reg ["<< m_reg << "] ,  m_value[" << m_value << " ]";
-#endif
-    if (m_reg < 16)
+    if (m_reg < MAX_REG )
     {
-        m_regs[m_reg] = m_value ;
+        m_modelReg->setData( m_modelReg->index(m_reg), m_value,Qt::EditRole );
     }
 }
 
-quint16 Chip8Emu::getRegister(quint8 m_reg)
-{
-#ifdef DEBUG
-    qDebug() << Q_FUNC_INFO << " m_reg["<< m_reg << "]): " << m_regs.at(m_reg);
-#endif
-
-    quint16 val = 0;
-    if (m_reg <= REG_VF)
-    {
-        val =  m_regs.at(m_reg) ;
-    }
-    return val;
+quint8 Chip8Emu::getRegister(quint8 m_reg)
+{    
+    return ( m_reg <  MAX_REG)
+            ? m_modelReg->data( m_modelReg->index(m_reg),Qt::EditRole ).toInt()
+            : 0;
 }
 
 void Chip8Emu::setRegI(quint16 m_value)
 {    
-#ifdef DEBUG
-    qDebug()  << Q_FUNC_INFO << QString(" current I value:%1 new I value:%2").arg(regI,0,16).arg(m_value,0,16);
-#endif
     regI = m_value;
+    emit registerIChanged( m_value );
 }
 
 quint16 Chip8Emu::getRegI()
@@ -463,7 +458,9 @@ quint16 Chip8Emu::getRegI()
 quint16 Chip8Emu::getIndex(quint8 x, quint8 y)
 {
     quint16 val = x + ( y*DISPLAY_X );
-    return ( val > MAX_DISPLAY_SIZE ) ? MAX_DISPLAY_SIZE : val;
+    return ( val > MAX_DISPLAY_SIZE )
+            ? MAX_DISPLAY_SIZE
+            : val;
 }
 
 // -- Draw function
@@ -491,7 +488,9 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
     quint16 idx =0;
     quint16 m_regI = getRegI();
 
-    maxLine = (( 0 == n ) | ( n > 16 ) ) ? 16 : n ; // check how many rows draw.
+    maxLine = (( 0 == n ) | ( n > 16 ) )
+            ? 16
+            : n ; // check how many rows draw.
 
     if (!m_ExtendedMode)
     {
@@ -543,12 +542,24 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
 void Chip8Emu::initDevice()
 {
     PC = START_ADDR;               // set mem offset counter
-    regI = 0;
+    emit pointerCodeChanged( PC );
+    setRegI( 0 );
     delay_timer = 0;               // clear delay timer;
     sound_timer = 0;               // clear sound timer;
+    emit delayTimerChanged( delay_timer );
+    emit soundTimerChanged( sound_timer );
+
     opcode_count = 0 ;
+
     m_memory.fill(0x0,RAM_SIZE);   // clear 4k ram memory
-    m_regs.fill(0x0,MAX_REG);
+
+    if (m_modelReg  != nullptr)
+    {
+        for (int i=0; i<MAX_REG; i++ ) // clear model
+        {
+            m_modelReg->setData(m_modelReg->index( i ), 0, Qt::EditRole );
+        }
+    }
 
     m_stack.clear();
     m_screen =  QBitArray(DISPLAY_X * DISPLAY_Y,false);
@@ -575,8 +586,6 @@ void Chip8Emu::initDevice()
 
     // Load font
     m_memory.insert(0,m_smallFont);
-
-    createMessage();
 }
 
 void Chip8Emu::changeKeyState(quint8 key, bool state)
@@ -596,7 +605,9 @@ void Chip8Emu::execute()
 
     //логическое выражение ? выражение 1 : выражение 2
 
-    if (opcode_count < ( m_ExtendedMode ? LAPS_TYPE_1 : LAPS_TYPE_2) )
+    if (opcode_count < ( m_ExtendedMode
+                         ? LAPS_TYPE_1
+                         : LAPS_TYPE_2) )
     {
         executeNextOpcode();
         opcode_count++;
@@ -613,6 +624,7 @@ void Chip8Emu::execute()
                 .arg(PC,0,10);
 
         emit  showTime(str);
+
 #endif
         emit updateScreen(m_screen);
         opcode_count = 0;
@@ -623,14 +635,12 @@ void Chip8Emu::execute()
 quint8 Chip8Emu::getSumCF( quint8 x, quint8 y)
 {
     quint16 val = x + y;
-    if (val > 255)
-    {
-        m_regs[REG_VF] = 0x1 ;
-    }
-    else
-    {
-        m_regs[REG_VF] = 0x1 ;
-    }
+    QModelIndex index = m_modelReg->index(REG_VF);
+//TODO check how this work
+    (val > 255)
+    ? m_modelReg->setData(index, 1, Qt::EditRole)
+    : m_modelReg->setData(index, 0, Qt::EditRole);
+
     return (val & 0x00FF);
 }
 
@@ -648,12 +658,9 @@ void Chip8Emu::saveBCDRegToI(quint8 m_reg_val)
 
     m_memory[val_i] = m_reg_val;
 
-    qDebug() << QString("Reg value:%1 | I value: %2| Memory[I]: %3| Memory[I+1]: %4| Memory[I+2]: %5")
-                .arg(m_reg_val,0,16)
-                .arg( val_i,0,16)
-                .arg( m_memory.at( getRegI() ))
-                .arg( m_memory.at( getRegI()+1 ))
-                .arg( m_memory.at( getRegI()+2 ));
+    emit memoryCellChanged( m_memory.at( getRegI() ),
+                            m_memory.at( getRegI()+1 ),
+                            m_memory.at( getRegI()+2 ));
 }
 
 void Chip8Emu::saveRegToMemory(quint8 m_reg_val)
@@ -701,35 +708,6 @@ void Chip8Emu::loadRegFromMemory(quint8 m_reg_val)
         setRegister(i, m_memory.at(idx + i) );
 #endif
     }
-}
-
-void Chip8Emu::createMessage()
-{
-    QByteArray m_msg;
-    QDataStream out(&m_msg,QIODevice::WriteOnly);
-    out.setVersion( QDataStream::Qt_5_10 );    
-    out << PC;
-    out << regI;
-    out << m_memory.at( regI );
-    out << m_memory.at( regI+1 );
-    out << m_memory.at( regI+2 );
-    out << delay_timer;
-    out << sound_timer;
-    out << m_stack;
-    out << m_regs;
-
-//    out << m_stack.size();
-//    qDebug()<< Q_FUNC_INFO << "m_stack.size()" <<m_stack.size();
-//    foreach (const quint16 m_val, m_stack) {
-//        out << m_val;
-//    }
-
-//    out << m_regs.size();
-//    foreach (const quint8 m_val, m_regs) {
-//        out << m_val;
-//    }
-
-    emit updateRegValues( m_msg );
 }
 
 quint8 Chip8Emu::getRealKey (quint8 m_emu_key)

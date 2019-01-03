@@ -1,8 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QDebug>
-
 #include <QApplication>
 #include <QGuiApplication>
 #include <QDesktopWidget>
@@ -20,11 +18,11 @@
 #include <QKeyEvent>
 #include <QStyle>
 
+#include "mydefs.h"
 #include "screen.h"
 #include "chip8emu.h"
-#include "mydefs.h"
 #include "cpuboxwidget.h"
-
+#include "registermodel.h"
 
 class MainWindow : public QMainWindow
 {
@@ -75,6 +73,7 @@ private:
     Screen* m_screen;
     CPUBoxWidget *m_debugCPU;
     const QString rsrcPath = ":res/images/";
+    QAbstractListModel *model;
 };
 
 #endif // MAINWINDOW_H

@@ -24,14 +24,16 @@ HEADERS += \
     src/screen.h \
     src/chip8emu.h \
     src/mydefs.h \	
-    src/cpuboxwidget.h
+    src/cpuboxwidget.h \
+    src/registermodel.h
 
 SOURCES = \
     src/main.cpp \
     src/mainwindow.cpp \
     src/screen.cpp \
     src/chip8emu.cpp \
-    src/cpuboxwidget.cpp
+    src/cpuboxwidget.cpp \
+    src/registermodel.cpp
 
 CONFIG += \
     console \
