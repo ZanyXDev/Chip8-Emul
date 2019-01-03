@@ -165,7 +165,11 @@ void MainWindow::createConnection()
     connect(m_emul,&Chip8Emu::updateScreen,m_screen,&Screen::updateScreen);
     connect(this,&MainWindow::changeKeyState,m_emul,&Chip8Emu::changeKeyState);
     connect(m_emul,&Chip8Emu::showDecodeOpCode,textListing,&QTextEdit::append);
-    connect(m_emul,&Chip8Emu::updateRegValues,m_debugCPU,&CPUBoxWidget::updateRegValues);
+    connect(m_emul,&Chip8Emu::pointerCodeChanged,m_debugCPU,&CPUBoxWidget::pointerCodeChanged);
+    connect(m_emul,&Chip8Emu::registerIChanged,m_debugCPU,&CPUBoxWidget::registerIChanged);
+    connect(m_emul,&Chip8Emu::delayTimerChanged,m_debugCPU,&CPUBoxWidget::delayTimerChanged);
+    connect(m_emul,&Chip8Emu::soundTimerChanged,m_debugCPU,&CPUBoxWidget::soundTimerChanged);
+    connect(m_emul,&Chip8Emu::memoryCellChanged,m_debugCPU,&CPUBoxWidget::memoryCellChanged);
 }
 
 quint8 MainWindow::mapKey(int mkey)
