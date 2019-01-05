@@ -15,7 +15,7 @@
 
 #define KEY_PAD 16
 
-#define REG_VF 16
+#define REG_VF 15
 #define MAX_REG 16
 
 #define SMALL_FONT_SIZE 5
