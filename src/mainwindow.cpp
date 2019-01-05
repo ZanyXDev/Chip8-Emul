@@ -174,7 +174,7 @@ void MainWindow::createConnection()
 
 quint8 MainWindow::mapKey(int mkey)
 {
-    quint8 m_key;
+    quint8 m_key = '\0';
     switch ( mkey )
     {
     case Qt::Key_1: m_key = 0;  break;
