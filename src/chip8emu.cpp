@@ -220,12 +220,19 @@ void Chip8Emu::executeNextOpcode()
             setRegister( X, getRegister( X ) - getRegister( Y ) );
             break;
         case 0x6:
-            /** 8xy6 SHR Vx {, Vy} Операция сдвига вправо на 1 бит. Сдвигается регистр Vx. Т.е. Vx = Vx >> 1.
-                 *  До операции сдвига выполняется следующее: если младший бит (самый правый) регистра Vx равен 1, то VF = 1, иначе VF = 0
-                 **/
-            asmTextString.append(QString("SHR V%1 {, V%2} \t ; Set register V%1 = V%1 >> 1 ").arg(X,0,16 ).arg( Y, 0, 16 ));
-            setRegister(REG_VF, ( ( getRegister( X ) >> 7) & 0x1) ) ;
-            setRegister( X, ( getRegister( X ) >> 1 ) );
+            /** 8xy6 SHR Vx {, Vy} Операция сдвига вправо на 1 бит.
+              * Сдвинуть регистр VY вправо на единицу и копировать результат
+              * в регистр VX.
+              * Регистр VF устанавливается на значение младшего значащего бита VY
+              * до сдвига.
+              **/
+
+            asmTextString.append(QString("SHR V%1 {, V%2} \t ; Set register V%1 = V%1 >> 1 ")
+                                 .arg( X, 0, 16 )
+                                 .arg( Y, 0, 16 )
+                                 );
+            setRegister( REG_VF,  getRegister( X ) & 0x1 );
+            setRegister( X, getRegister( X ) >> 1 );
             break;
         case 0x7:
             /**
@@ -249,8 +256,9 @@ void Chip8Emu::executeNextOpcode()
                  *  До операции сдвига выполняется следующее: если младший бит (самый правый) регистра Vx равен 1, то VF = 1, иначе VF = 0
                  **/
             asmTextString.append(QString("SHL V%1 {, V%2} \t ; Set register V%1 = V%1 << 1 ").arg( X,0,16 ).arg( Y, 0, 16 ));
-            setRegister(REG_VF, ( ( getRegister( X ) >> 7) & 0x1) ) ;
+            setRegister(REG_VF, getRegister( X ) >>7);
             setRegister( X, ( getRegister( X ) << 1 ) );
+
             break;
         default:
             break;
@@ -567,6 +575,7 @@ void Chip8Emu::initDevice()
     m_ExtendedMode = false;
     m_ElapsedTime = 0;
 
+    //QByteArray b = QByteArrayLiteral("\x12\x00\xa4\x42\x51\x00\x00\x99");
     m_smallFont.append(0xF0).append(0x90).append(0x90).append(0x90).append(0xF0); 	// 0
     m_smallFont.append(0x20).append(0x60).append(0x20).append(0x20).append(0x70);	// 1
     m_smallFont.append(0xF0).append(0x10).append(0xF0).append(0x80).append(0xF0);	// 2
@@ -636,10 +645,10 @@ quint8 Chip8Emu::getSumCF( quint8 x, quint8 y)
 {
     quint16 val = x + y;
     QModelIndex index = m_modelReg->index(REG_VF);
-//TODO check how this work
+    //TODO check how this work
     (val > 255)
-    ? m_modelReg->setData(index, 1, Qt::EditRole)
-    : m_modelReg->setData(index, 0, Qt::EditRole);
+            ? m_modelReg->setData(index, 1, Qt::EditRole)
+            : m_modelReg->setData(index, 0, Qt::EditRole);
 
     return (val & 0x00FF);
 }
@@ -668,7 +677,7 @@ void Chip8Emu::saveRegToMemory(quint8 m_reg_val)
     //qDebug()<< "Chip8Emu::saveRegToMemory() " << "reg_I:" << getRegI() << " m_reg_val:" <<m_reg_val;
     if (m_reg_val <= REG_VF)
     {
-        quint8 idx = getRegI();
+        quint16 idx = getRegI();
         for (int i=0; i<=m_reg_val; ++i)
         {
 #ifdef DEBUG
@@ -710,6 +719,8 @@ void Chip8Emu::loadRegFromMemory(quint8 m_reg_val)
     }
 }
 
+
+
 quint8 Chip8Emu::getRealKey (quint8 m_emu_key)
 {
     /**   Real           Emu        ScanCode
@@ -744,7 +755,7 @@ quint8 Chip8Emu::getRealKey (quint8 m_emu_key)
     case 14: value = 11; break;
     case 15: value = 15; break;
     default:
-        value = 0; break;
+        value = 0;
         break;
     }
     //qDebug() << "Real key code:" << value;
