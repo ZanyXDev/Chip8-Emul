@@ -58,6 +58,7 @@ int RegisterModel::rowCount(const QModelIndex &parent) const
 
 QVariant RegisterModel::headerData(int nSection, Qt::Orientation orientation, int nRole) const
 {
+    QString h_data;
     if ( nRole != Qt::DisplayRole)
     {
         return QVariant();
@@ -69,7 +70,6 @@ QVariant RegisterModel::headerData(int nSection, Qt::Orientation orientation, in
     }
     else
     {
-        QString h_data;
         switch (nSection) {
         case 0:
             h_data = QString("V0");
@@ -122,10 +122,11 @@ QVariant RegisterModel::headerData(int nSection, Qt::Orientation orientation, in
         default:
             break;
         }
-        return h_data;
-    }
 
-    return QVariant();
+    }
+    return h_data.isEmpty()
+            ? QVariant()
+            : h_data ;
 }
 
 Qt::ItemFlags RegisterModel::flags(const QModelIndex &index) const

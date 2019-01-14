@@ -109,9 +109,10 @@ private:
     void loadRegFromMemory(quint8 m_reg_val);
 
 
+    void loadFontToMemory();
     QTimer m_timer;
-    // FIXME memory, registers and stack need convert to QModel
-    QByteArray m_memory;    // 4k ram memory
+    // FIXME memory, registers and stack need convert to QVector
+    QVector<quint8> m_memory;    // 4k ram memory
     //QVector<quint8> m_regs;      // 16 registers 8bit size;
     QByteArray m_smallFont; // size 16x5 small font
     QByteArray m_bigFont;   // size 16x10 big font    

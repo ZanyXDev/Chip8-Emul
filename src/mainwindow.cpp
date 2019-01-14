@@ -209,7 +209,8 @@ QPoint MainWindow::calcDeskTopCenter(int width,int height)
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
-{    
+{
+    //TODO use QMutex for lock Key state and save key state to QSet
     emit changeKeyState( mapKey( event->key() ),true );
     QMainWindow::keyPressEvent(event);
 }
