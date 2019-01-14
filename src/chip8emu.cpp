@@ -78,47 +78,55 @@ void Chip8Emu::executeNextOpcode()
         {
             // * 00EE RET  Возвратиться из подпрограммы
 
-            PC = m_stack.takeFirst();
-            asmTextString.append(QString("RET \t ; Return sub-routine to address 0x%1").arg(PC,0,16));
-            PC -=2;
-        }
-
-        if ( X == 0xC)
-        {
-            // 00Cn SCD n Прокрутить изображение на экране на n строк вниз
-            asmTextString.append(QString("SCD 0x%1 \t ; Scroll down %1 lines").arg(LO,0,16));
-            moveDown( LO );
-        }
-
-        if ( X == 0xF )
-        {
-            switch ( Y )
+            if ( ! m_stack.isEmpty())
             {
-            case 0xB:
-                // 00FB SCR Прокрутить изображение на экране на 4 пикселя вправо в режиме 128x64, либо на 2 пикселя в режиме 64x32
-                asmTextString.append(QString("SCR ; Scroll right on 4 (or 2 ) pixels"));
-                moveRight();
-                break;
-            case 0xC:
-                // 00FC SCL Прокрутить изображение на экране на 4 пикселя влево в режиме 128x64, либо на 2 пикселя в режиме 64x32
-                asmTextString.append(QString("SCL ; Scroll left on 4 (or 2 ) pixels"));
-                moveLeft();
-                break;
-            case 0xD: // EXIT Завершить программу
-                asmTextString.append(QString("EXIT ; Shutdown programm"));
-                break;
-            case 0xE:
-                // 00FE LOW Выключить расширенный режим экрана. Переход на разрешение 64x32
-                asmTextString.append(QString("LOW ; Extend mode OFF"));
-                m_ExtendedMode = false;
-                break;
-            case 0xF:
-                // 00FF HIGH Включить расширенный режим экрана. Переход на разрешение 128x64
-                asmTextString.append(QString("HIGH ; Extend mode ON"));
-                m_ExtendedMode = true;
-                break;
-            default:
-                break;
+                PC = m_stack.takeFirst();
+                asmTextString.append(QString("RET \t ; Return sub-routine to address 0x%1").arg(PC,0,16));
+                PC -=2;
+            }
+            else
+            {
+                asmTextString.append( QString("Error return sub-routine. Stack is empty") );
+
+            }
+
+            if ( X == 0xC)
+            {
+                // 00Cn SCD n Прокрутить изображение на экране на n строк вниз
+                asmTextString.append(QString("SCD 0x%1 \t ; Scroll down %1 lines").arg(LO,0,16));
+                moveDown( LO );
+            }
+
+            if ( X == 0xF )
+            {
+                switch ( Y )
+                {
+                case 0xB:
+                    // 00FB SCR Прокрутить изображение на экране на 4 пикселя вправо в режиме 128x64, либо на 2 пикселя в режиме 64x32
+                    asmTextString.append(QString("SCR ; Scroll right on 4 (or 2 ) pixels"));
+                    moveRight();
+                    break;
+                case 0xC:
+                    // 00FC SCL Прокрутить изображение на экране на 4 пикселя влево в режиме 128x64, либо на 2 пикселя в режиме 64x32
+                    asmTextString.append(QString("SCL ; Scroll left on 4 (or 2 ) pixels"));
+                    moveLeft();
+                    break;
+                case 0xD: // EXIT Завершить программу
+                    asmTextString.append(QString("EXIT ; Shutdown programm"));
+                    break;
+                case 0xE:
+                    // 00FE LOW Выключить расширенный режим экрана. Переход на разрешение 64x32
+                    asmTextString.append(QString("LOW ; Extend mode OFF"));
+                    m_ExtendedMode = false;
+                    break;
+                case 0xF:
+                    // 00FF HIGH Включить расширенный режим экрана. Переход на разрешение 128x64
+                    asmTextString.append(QString("HIGH ; Extend mode ON"));
+                    m_ExtendedMode = true;
+                    break;
+                default:
+                    break;
+                }
             }
         }
         // 0nnn SYS nnn Перейти на машинный код RCA 1802 по адресу nnn. Эта инструкция была только
@@ -295,7 +303,7 @@ void Chip8Emu::executeNextOpcode()
         break;
     case 0xC: //Cxkk RND Vx, kk Устанавливается Vx = (случайное число от 0 до 255) & kk
         asmTextString.append(QString("RND V%1, 0x%2 \t ; Set register V%1 = random {0,255} & 0x%2 ").arg( X,0,16 ).arg( KK,0,16 ));
-        setRegister(X, QRandomGenerator::global()->bounded( 256 ) & KK );
+        setRegister(X, static_cast<quint8>( QRandomGenerator::global()->bounded( 256 )) & KK );
         break;
     case 0xD: /** Dxyn DRW Vx, Vy, n Нарисовать на экране спрайт. Эта инструкция считывает n байт по адресу
           * содержащемуся в регистре I и рисует их на экране в виде спрайта c координатой Vx, Vy.
@@ -512,7 +520,7 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
 
     if (!m_ExtendedMode)
     {
-        for (int row = 0; row < maxLine; ++row)
+        for (quint8 row = 0; row < maxLine; ++row)
         {
 #ifdef DEBUG
             if ( m_regI +row < m_memory.size() )
@@ -526,7 +534,7 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
 #else
             drw = m_memory.at( m_regI +row );
 #endif
-            for (int col = 0; col < 8; ++col)
+            for (quint8 col = 0; col < 8; ++col)
             {
                 newPixel = drw & (1 << (7 - col));
                 idx = getIndex ( (vx + col), (vy + row ));
@@ -569,7 +577,7 @@ void Chip8Emu::initDevice()
 
     opcode_count = 0 ;
 
-   // m_memory.fill(0x0,RAM_SIZE);  // clear 4k ram memory
+    // m_memory.fill(0x0,RAM_SIZE);  // clear 4k ram memory
 
     if (m_modelReg != nullptr)
     {
