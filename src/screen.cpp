@@ -5,7 +5,7 @@ Screen::Screen( QWidget *parent)
     : QWidget(parent)
 {
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // set ideal size as minimum Qimage size/ Can expand, only
-    zoom = 16; // TODO add ability change ixel image size default 8x8
+    zoom = 8; // TODO add ability change ixel image size default 8x8
 
     m_display = QBitArray(DISPLAY_X * DISPLAY_Y,false);
 
