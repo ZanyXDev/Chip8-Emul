@@ -1,6 +1,5 @@
 ﻿#include "cpuboxwidget.h"
 
-//TODO need change recived data from message to DataModel
 
 CPUBoxWidget::CPUBoxWidget(QWidget *parent)
     : QWidget(parent)
@@ -63,10 +62,7 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
     this->setLayout(mainVBoxLayout);
 }
 
-void CPUBoxWidget::setModel(QAbstractListModel *m_model)
-{
-    registerTableView->setModel( m_model );
-}
+
 
 void CPUBoxWidget::registerIChanged(quint16 value)
 {

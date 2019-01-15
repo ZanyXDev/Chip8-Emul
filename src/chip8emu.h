@@ -8,7 +8,6 @@
 #include <QVector>
 #include <QRandomGenerator>
 #include <QDataStream>
-#include <QAbstractListModel>
 #include <QTimer>
 #include "mydefs.h"
 
@@ -19,8 +18,6 @@ class Chip8Emu : public QObject
 public:
     explicit Chip8Emu(QObject *parent = nullptr);
 
-    void setModel(QAbstractListModel *model);
-
 signals:
     void ReadyToWork( bool flag);
     void updateScreen( QBitArray screen );
@@ -30,7 +27,8 @@ signals:
     void pointerCodeChanged( quint16 value);
     void delayTimerChanged( quint8 value );
     void soundTimerChanged( quint8 value );
-    void memoryCellChanged( quint16 value_0, quint16 value_1, quint16 value_2 );
+    //void memoryCellChanged( quint16 value_0, quint16 value_1, quint16 value_2 );
+    void registerValueChanged(quint8 m_reg, quint8 value );
 
 #ifdef DEBUG
     void showTime(const QString &m_time);
@@ -108,12 +106,11 @@ private:
      */
     void loadRegFromMemory(quint8 m_reg_val);
 
-
     void loadFontToMemory();
     QTimer m_timer;
     // FIXME memory, registers and stack need convert to QVector
     QVector<quint8> m_memory;    // 4k ram memory
-    //QVector<quint8> m_regs;      // 16 registers 8bit size;
+    QVector<quint8> m_registers;      // 16 registers 8bit size;
     QByteArray m_smallFont; // size 16x5 small font
     QByteArray m_bigFont;   // size 16x10 big font    
     QVector<quint16> m_stack;     // deep 16 levels;
@@ -131,8 +128,6 @@ private:
     quint32 m_ElapsedTime;
 
     bool m_ExtendedMode;    // Chip8 (false) or SuperChip (true) mode
-
-    QAbstractListModel *m_modelReg;
 };
 
 #endif // CHIP8EMU_H

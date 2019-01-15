@@ -9,10 +9,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     this->setMaximumSize(desktopRect.width() - 5, desktopRect.height() - 5);
     // Move app window to center desktop
     this->move(calcDeskTopCenter(this->width(),this->height()));
-
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
-
-    model = new RegisterModel( );
     m_emul = new Chip8Emu();
 
     //createActions();
@@ -23,8 +20,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     createStatusBar();
     createConnection();
 
-    m_emul->setModel( model );
-    m_debugCPU->setModel( model);
 }
 
 // -------------------------------------- PUBLIC SLOTS ---------------------------------------
@@ -139,6 +134,9 @@ void MainWindow::createGUI()
 
     dock = new QDockWidget(tr("Debug CPU window"), this);
     m_debugCPU = new CPUBoxWidget();
+    m_debugCPU->setSizePolicy(QSizePolicy::Minimum,
+                              QSizePolicy::Minimum);
+
     dock->setWidget( m_debugCPU );
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     addDockWidget(Qt::RightDockWidgetArea, dock);
@@ -165,11 +163,12 @@ void MainWindow::createConnection()
     connect(m_emul,&Chip8Emu::updateScreen,m_screen,&Screen::updateScreen);
     connect(this,&MainWindow::changeKeyState,m_emul,&Chip8Emu::changeKeyState);
     connect(m_emul,&Chip8Emu::showDecodeOpCode,textListing,&QTextEdit::append);
-    connect(m_emul,&Chip8Emu::pointerCodeChanged,m_debugCPU,&CPUBoxWidget::pointerCodeChanged);
-    connect(m_emul,&Chip8Emu::registerIChanged,m_debugCPU,&CPUBoxWidget::registerIChanged);
-    connect(m_emul,&Chip8Emu::delayTimerChanged,m_debugCPU,&CPUBoxWidget::delayTimerChanged);
-    connect(m_emul,&Chip8Emu::soundTimerChanged,m_debugCPU,&CPUBoxWidget::soundTimerChanged);
-    connect(m_emul,&Chip8Emu::memoryCellChanged,m_debugCPU,&CPUBoxWidget::memoryCellChanged);
+    connect(m_emul,&Chip8Emu::pointerCodeChanged,  m_debugCPU,&CPUBoxWidget::pointerCodeChanged);
+    connect(m_emul,&Chip8Emu::registerIChanged,    m_debugCPU,&CPUBoxWidget::registerIChanged);
+    connect(m_emul,&Chip8Emu::delayTimerChanged,   m_debugCPU,&CPUBoxWidget::delayTimerChanged);
+    connect(m_emul,&Chip8Emu::soundTimerChanged,   m_debugCPU,&CPUBoxWidget::soundTimerChanged);
+    //connect(m_emul,&Chip8Emu::memoryCellChanged,   m_debugCPU,&CPUBoxWidget::memoryCellChanged);
+    //connect(m_emul,&Chip8Emu::registerValueChanged,m_debugCPU,&CPUBoxWidget::registerValueChanged);
 }
 
 quint8 MainWindow::mapKey(int mkey)
