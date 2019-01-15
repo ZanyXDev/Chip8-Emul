@@ -6,11 +6,6 @@ Chip8Emu::Chip8Emu(QObject *parent)
     connect(&m_timer,&QTimer::timeout,this,&Chip8Emu::execute);
 }
 
-void Chip8Emu::setModel(QAbstractListModel *model)
-{
-    m_modelReg = model;
-}
-
 void Chip8Emu::loadData2Memory(QByteArray &data)
 {
     initDevice();
@@ -23,15 +18,13 @@ void Chip8Emu::loadData2Memory(QByteArray &data)
         for (int i=0; i< data.size();i++)
         {
             m_memory.insert(start_adr++, static_cast<quint8>( data.at(i)) );
-        }
-        //m_memory.insert(START_ADDR,data);
+        }        
         emit ReadyToWork(true);
     }
 }
 
 void Chip8Emu::startEmulation()
 {
-
     m_timer.start();
 }
 
@@ -452,7 +445,8 @@ void Chip8Emu::setRegister(quint8 m_reg, quint8 m_value)
 {
     if (m_reg < MAX_REG )
     {
-        m_modelReg->setData( m_modelReg->index(m_reg), m_value,Qt::EditRole );
+        m_registers.replace(m_reg,m_value);
+        emit registerValueChanged(m_reg,m_value);
     }
 }
 
@@ -463,7 +457,7 @@ quint8 Chip8Emu::getRegister(quint8 m_reg)
    * @note remove modelReg and restore QVector<quint8>
   */
     return ( m_reg < MAX_REG)
-            ? m_modelReg->data( m_modelReg->index(m_reg),Qt::EditRole ).toInt()
+            ? m_registers.at(m_reg)
             : 0;
 }
 
@@ -576,23 +570,12 @@ void Chip8Emu::initDevice()
     emit soundTimerChanged( sound_timer );
 
     opcode_count = 0 ;
-
-    // m_memory.fill(0x0,RAM_SIZE);  // clear 4k ram memory
-
-    if (m_modelReg != nullptr)
-    {
-        for (int i=0; i<MAX_REG; i++ ) // clear model
-        {
-            m_modelReg->setData(m_modelReg->index( i ), 0, Qt::EditRole );
-        }
-    }
-
+    m_registers.fill( 0x0, MAX_REG );  // clear registers
     m_stack.clear();
-    m_screen = QBitArray(DISPLAY_X * DISPLAY_Y,false);
-    m_keys.fill(false, KEY_PAD);  // All keys unPressed
+    m_screen = QBitArray( DISPLAY_X * DISPLAY_Y, false );
+    m_keys.fill( false, KEY_PAD );  // All keys unPressed
     m_ExtendedMode = false;
     m_ElapsedTime = 0;
-
     loadFontToMemory();
 }
 
@@ -643,11 +626,11 @@ void Chip8Emu::execute()
 quint8 Chip8Emu::getSumCF( quint8 x, quint8 y)
 {
     quint16 val = x + y;
-    QModelIndex index = m_modelReg->index(REG_VF);
+
     //TODO check how this work
     (val > 255)
-            ? m_modelReg->setData(index, 1, Qt::EditRole)
-            : m_modelReg->setData(index, 0, Qt::EditRole);
+            ? m_registers.replace( REG_VF, 1 )
+            : m_registers.replace( REG_VF, 0 );
 
     return (val & 0x00FF);
 }
@@ -666,9 +649,9 @@ void Chip8Emu::saveBCDRegToI(quint8 m_reg_val)
 
     m_memory[val_i] = m_reg_val;
 
-    emit memoryCellChanged( m_memory.at( getRegI() ),
-                            m_memory.at( getRegI()+1 ),
-                            m_memory.at( getRegI()+2 ));
+//    emit memoryCellChanged( m_memory.at( getRegI() ),
+//                            m_memory.at( getRegI()+1 ),
+//                            m_memory.at( getRegI()+2 ));
 }
 
 void Chip8Emu::saveRegToMemory(quint8 m_reg_val)

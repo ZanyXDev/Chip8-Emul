@@ -12,11 +12,6 @@
 #include <QFrame>
 #include <QTextEdit>
 #include <QLineEdit>
-#include <QCheckBox>
-#include <QByteArray>
-#include <QDataStream>
-#include <QDataWidgetMapper>
-#include <QAbstractListModel>
 #include <QTableView>
 #include "mydefs.h"
 
@@ -25,8 +20,7 @@ class CPUBoxWidget : public QWidget
 {
     Q_OBJECT
 public:    
-    explicit CPUBoxWidget( QWidget *parent = Q_NULLPTR);
-    void setModel(QAbstractListModel *m_model);
+    explicit CPUBoxWidget( QWidget *parent = Q_NULLPTR);    
 
 public slots:
     void registerIChanged( quint16 value );
