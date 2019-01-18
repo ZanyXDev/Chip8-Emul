@@ -73,9 +73,9 @@ void Chip8Emu::executeNextOpcode()
 
             if ( ! m_stack.isEmpty())
             {
-                PC = m_stack.takeFirst();
+                PC = m_stack.pop();
                 asmTextString.append(QString("RET \t ; Return sub-routine to address 0x%1").arg(PC,0,16));
-                PC -=2;
+                emit stackPop();
             }
             else
             {
@@ -134,7 +134,8 @@ void Chip8Emu::executeNextOpcode()
     case 0x2:
         // 2nnn CALL nnn Вызов подпрограммы по адресу nnn
         asmTextString.append(QString("CALL 0x%1 \t ; Call sub-routine from 0x%1 address").arg( NNN,0,16 ));
-        m_stack.push_front( PC );
+        m_stack.push( PC );
+        emit stackPush( PC );
         PC = NNN;
         PC-=2; // correct call and jump pointer
         break;
@@ -763,8 +764,6 @@ void Chip8Emu::loadFontToMemory()
              << 0xfc << 0x80 << 0x80 << 0x80 << 0x80; // F
 
 }
-
-
 
 quint8 Chip8Emu::getRealKey (quint8 m_emu_key)
 {

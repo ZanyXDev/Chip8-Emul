@@ -7,7 +7,7 @@
 #include <QBitArray>
 #include <QVector>
 #include <QRandomGenerator>
-#include <QDataStream>
+#include <QStack>
 #include <QTimer>
 #include "mydefs.h"
 
@@ -29,6 +29,9 @@ signals:
     void soundTimerChanged( quint8 value );
     //void memoryCellChanged( quint16 value_0, quint16 value_1, quint16 value_2 );
     void registerValueChanged(quint8 m_reg, quint8 value );
+
+    void stackPop();
+    void stackPush( quint16 value );
 
 #ifdef DEBUG
     void showTime(const QString &m_time);
@@ -113,7 +116,7 @@ private:
     QVector<quint8> m_registers;      // 16 registers 8bit size;
     QByteArray m_smallFont; // size 16x5 small font
     QByteArray m_bigFont;   // size 16x10 big font    
-    QVector<quint16> m_stack;     // deep 16 levels;
+    QStack<quint16> m_stack;     // deep 16 levels;
     QBitArray m_screen;
     QBitArray m_keys;
 

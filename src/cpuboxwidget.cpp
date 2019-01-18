@@ -295,5 +295,15 @@ void CPUBoxWidget::registerValueChanged(quint8 m_reg, quint8 value)
     }
 }
 
+void CPUBoxWidget::stackPop()
+{
+    callStack->takeItem( 0 );
+}
+
+void CPUBoxWidget::stackPush(quint16 value)
+{
+    callStack->insertItem(0,QString("0x%1").arg( value,0,16));
+}
+
 
 

@@ -170,6 +170,9 @@ void MainWindow::createConnection()
     connect(m_emul,&Chip8Emu::delayTimerChanged,   m_debugCPU,&CPUBoxWidget::delayTimerChanged);
     connect(m_emul,&Chip8Emu::soundTimerChanged,   m_debugCPU,&CPUBoxWidget::soundTimerChanged);
     connect(m_emul,&Chip8Emu::registerValueChanged,m_debugCPU,&CPUBoxWidget::registerValueChanged);
+
+    connect(m_emul,&Chip8Emu::stackPop, m_debugCPU,&CPUBoxWidget::stackPop);
+    connect(m_emul,&Chip8Emu::stackPush,m_debugCPU,&CPUBoxWidget::stackPush);
 }
 
 quint8 MainWindow::mapKey(int mkey)
