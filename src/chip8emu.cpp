@@ -13,8 +13,8 @@ void Chip8Emu::loadData2Memory(QByteArray &data)
     if ( !data.isEmpty() &&
          ( data.size() <= RAM_SIZE - START_ADDR) )
     {
-        quint16 start_adr = START_ADDR;
-        m_memory.resize( start_adr + data.size());
+        quint16 start_adr = START_ADDR;             
+
         for (int i=0; i< data.size();i++)
         {
             m_memory.insert(start_adr++, static_cast<quint8>( data.at(i)) );
@@ -380,7 +380,9 @@ void Chip8Emu::executeNextOpcode()
         {
             quint16 curRegValue = getRegister( X );
             quint16 res = curRegValue * SMALL_FONT_SIZE;
-            qDebug() << Q_FUNC_INFO << "[opCode]"<< opCode <<" case 0x29: register " << X << " has value:" << curRegValue << " new value register I:" << res;
+            qDebug() << Q_FUNC_INFO <<" case 0x29: register " << X
+                                    << " has value:" << curRegValue
+                                    << " new value register I:" << res;
 
             setRegI( res );
         }
@@ -576,7 +578,17 @@ void Chip8Emu::initDevice()
     m_keys.fill( false, KEY_PAD );  // All keys unPressed
     m_ExtendedMode = false;
     m_ElapsedTime = 0;
+
     loadFontToMemory();
+
+    // clear other memory
+    quint16 start_adr = m_memory.size();
+
+    for (int i=start_adr; i< RAM_SIZE;i++)
+    {
+        m_memory.insert(i, 0x0 );
+    }
+
 }
 
 void Chip8Emu::changeKeyState(quint8 key, bool state)
@@ -636,22 +648,19 @@ quint8 Chip8Emu::getSumCF( quint8 x, quint8 y)
 }
 
 void Chip8Emu::saveBCDRegToI(quint8 m_reg_val)
-{
+{    
     quint16 val_i  = getRegI();
 
-    m_memory[val_i] = (m_reg_val - (m_reg_val % 100)) / 100;
+    m_memory.replace(val_i, ((m_reg_val - (m_reg_val % 100)) / 100 ) );
     m_reg_val -= m_memory.at(val_i) * 100;
     ++val_i;
 
-    m_memory[val_i] = (m_reg_val - (m_reg_val % 10)) / 10;
+    m_memory.replace(val_i, ( (m_reg_val - (m_reg_val % 10)) / 10 ) );
     m_reg_val -= m_memory.at(val_i) * 10;
     ++val_i;
 
-    m_memory[val_i] = m_reg_val;
+    m_memory.replace( val_i, m_reg_val );
 
-//    emit memoryCellChanged( m_memory.at( getRegI() ),
-//                            m_memory.at( getRegI()+1 ),
-//                            m_memory.at( getRegI()+2 ));
 }
 
 void Chip8Emu::saveRegToMemory(quint8 m_reg_val)
@@ -669,7 +678,7 @@ void Chip8Emu::saveRegToMemory(quint8 m_reg_val)
             }
             else
             {
-                qDebug() << "Chip8Emu::saveRegToMemory(quint8 m_reg_val) ERROR: index out of range :"<< (idx+i);
+                qDebug() << Q_FUNC_INFO<< "ERROR: index out of range :"<< (idx+i);
             }
 #else
             m_memory[idx + i] = getRegister( i );
@@ -680,7 +689,7 @@ void Chip8Emu::saveRegToMemory(quint8 m_reg_val)
 
 void Chip8Emu::loadRegFromMemory(quint8 m_reg_val)
 {
-    qDebug() <<"Chip8Emu::loadRegFromMemory "<< "reg_I :"<< getRegI();
+    qDebug() <<Q_FUNC_INFO<< " reg_I :"<< getRegI() << " m_reg_val:" <<m_reg_val;
 
     quint16 idx = getRegI();
 
@@ -693,7 +702,7 @@ void Chip8Emu::loadRegFromMemory(quint8 m_reg_val)
         }
         else
         {
-            qDebug() << "Chip8Emu::loadRegFromMemory(quint8 m_reg_val) ERROR: index out of range :"<< (idx+i);
+            qDebug() << Q_FUNC_INFO<< "ERROR: index out of range :"<< (idx+i);
         }
 #else
         setRegister(i, m_memory.at(idx + i) );
@@ -703,7 +712,7 @@ void Chip8Emu::loadRegFromMemory(quint8 m_reg_val)
 
 void Chip8Emu::loadFontToMemory()
 {
-    m_memory << 0xF0 << 0x90 << 0x90 << 0x90 << 0xF0; // 0
+    m_memory << 0xF0 << 0x90 << 0x90 << 0x90 << 0xF0 ; // 0
     m_memory << 0x20 << 0x60 << 0x20 << 0x20 << 0x70 ; // 1
     m_memory << 0xF0 << 0x10 << 0xF0 << 0x80 << 0xF0 ; // 2
     m_memory << 0xF0 << 0x10 << 0xF0 << 0x10 << 0xF0 ; // 3
