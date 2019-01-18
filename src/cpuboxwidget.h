@@ -28,6 +28,8 @@ public slots:
 //    void memoryCellChanged( quint16 value_0, quint16 value_1, quint16 value_2 );
     void registerValueChanged(quint8 m_reg ,quint8 value );
 
+    void stackPop();
+    void stackPush( quint16 value );
 private:    
     QLineEdit *ILED;
 //    QLineEdit *MemoryCellLED_0;
