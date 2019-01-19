@@ -1,33 +1,17 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#include <QWidget>
-#include <QPaintEvent>
+#include <QObject>
 
-class Display : public QWidget
+class Display : public QObject
 {
     Q_OBJECT
 public:
-    explicit Display(QWidget *parent = nullptr);
+    explicit Display(QObject *parent = nullptr);
 
-    QSize minimumSizeHint() const override;
-    QSize sizeHint() const override;
-    void setAntialiased(bool antialiased);
 signals:
 
 public slots:
-
-protected:
-    void paintEvent(QPaintEvent *event) override;
-    void resizeEvent(QResizeEvent *event) override;
-
-private:
-    void debugDraw();
-
-    QImage m_screenImage;
-    QColor bgColor;
-    QColor fgColor;
-    bool antialiased;
 };
 
 #endif // DISPLAY_H
