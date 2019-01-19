@@ -22,6 +22,7 @@
 #include "screenwidget.h"
 #include "chip8emu.h"
 #include "cpuboxwidget.h"
+#include "display.h"
 
 
 class MainWindow : public QMainWindow
@@ -73,7 +74,7 @@ private:
     ScreenWidget *m_screen;
     CPUBoxWidget *m_debugCPU;
     const QString rsrcPath = ":res/images/";
-
+    Display *m_display ;
 };
 
 #endif // MAINWINDOW_H
