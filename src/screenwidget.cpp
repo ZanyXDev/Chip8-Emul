@@ -7,7 +7,7 @@ ScreenWidget::ScreenWidget( QWidget *parent)
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // set ideal size as minimum Qimage size/ Can expand, only
     zoom = 8; // TODO add ability change ixel image size default 8x8
 
-    m_display = QBitArray(DISPLAY_X * DISPLAY_Y,false);
+    m_display_old = QBitArray(DISPLAY_X * DISPLAY_Y,false);
 
     bgColor = Qt::darkGray;
     fgColor = Qt::black;
@@ -27,9 +27,14 @@ QSize ScreenWidget::sizeHint() const
     return size;
 }
 
+void ScreenWidget::setDisplay(Display *display)
+{
+    m_display = display;
+}
+
 void ScreenWidget::updateScreen(QBitArray display)
 {   
-    m_display = display;
+    m_display_old = display;
     update();
 }
 
@@ -76,7 +81,7 @@ void ScreenWidget::drawImagePixel(QPainter *painter, int x, int y)
     quint16 val = x + (y * DISPLAY_X );
     quint16 idx = ( val > MAX_DISPLAY_SIZE ) ? MAX_DISPLAY_SIZE : val;
 
-    if (m_display.at(idx))
+    if (m_display_old.at(idx))
     {  //TODO add ability change color from menu
         color = Qt::black;
     }

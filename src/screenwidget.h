@@ -10,7 +10,7 @@
 #include <QPixmap>
 
 #include "mydefs.h"
-
+#include "display.h"
 
 class ScreenWidget : public QWidget
 {
@@ -18,7 +18,7 @@ class ScreenWidget : public QWidget
 public:
     explicit ScreenWidget(QWidget *parent = nullptr);
     QSize sizeHint() const;
-
+    void setDisplay( Display *display );
 signals:
 
 public slots:
@@ -32,12 +32,15 @@ private:
   QColor bgColor;
   QColor fgColor;
   QColor lineColor;
-  QBitArray m_display;
+  QBitArray m_display_old;
   int zoom;
+  Display *m_display;
+
 
   void drawImagePixel(QPainter *painter, int x, int y);
 
   void drawOnSurface();
+
 };
 
 #endif // SCREENWIDGET_H
