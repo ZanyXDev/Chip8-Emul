@@ -163,7 +163,7 @@ void MainWindow::createConnection()
     connect(this,&MainWindow::fileLoaded,m_emul,&Chip8Emu::loadData2Memory);    
     connect(this,&MainWindow::changeKeyState,m_emul,&Chip8Emu::changeKeyState);
 
-    connect(m_emul,&Chip8Emu::updateScreen,m_screen,&ScreenWidget::updateScreen);
+    connect(m_emul,&Chip8Emu::updateScreen,m_screen,&ScreenWidget::update);
     connect(m_emul,&Chip8Emu::showDecodeOpCode,textListing,&QTextEdit::append);
 
     connect(m_emul,&Chip8Emu::pointerCodeChanged,  m_debugCPU,&CPUBoxWidget::pointerCodeChanged);
