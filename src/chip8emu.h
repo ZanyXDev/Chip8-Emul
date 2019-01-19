@@ -20,7 +20,7 @@ public:
     void setDisplay( Display *display );
 signals:
     void ReadyToWork( bool flag);
-    void updateScreen( QBitArray screen );
+    void updateScreen();
     void finishExecute();
     void showDecodeOpCode( const QString &asm_txt );    
     void registerIChanged( quint16 value );

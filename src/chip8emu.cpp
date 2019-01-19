@@ -36,7 +36,7 @@ void Chip8Emu::startEmulation()
 void Chip8Emu::stepEmulation()
 {
     this->execute();
-    emit updateScreen(m_screen);
+    emit updateScreen();
 }
 
 void Chip8Emu::stopEmulation()
@@ -635,7 +635,7 @@ void Chip8Emu::execute()
         emit showTime(str);
 
 #endif
-        emit updateScreen(m_screen);
+        emit updateScreen();
         opcode_count = 0;
         m_ElapsedTime = 0;
     }
