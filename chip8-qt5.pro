@@ -21,7 +21,7 @@ RESOURCES     = chip8_res.qrc
 
 HEADERS += \
     src/mainwindow.h  \ 
-    src/screen.h \
+    src/screenwidget.h \
     src/chip8emu.h \
     src/mydefs.h \	
     src/cpuboxwidget.h
@@ -29,7 +29,7 @@ HEADERS += \
 SOURCES = \
     src/main.cpp \
     src/mainwindow.cpp \
-    src/screen.cpp \
+    src/screenwidget.cpp \
     src/chip8emu.cpp \
     src/cpuboxwidget.cpp
 

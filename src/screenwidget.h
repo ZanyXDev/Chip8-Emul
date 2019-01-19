@@ -1,5 +1,5 @@
-#ifndef SCREEN_H
-#define SCREEN_H
+#ifndef SCREENWIDGET_H
+#define SCREENWIDGET_H
 
 #include <QWidget>
 #include <QBitArray>
@@ -12,11 +12,11 @@
 #include "mydefs.h"
 
 
-class Screen : public QWidget
+class ScreenWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Screen(QWidget *parent = nullptr);
+    explicit ScreenWidget(QWidget *parent = nullptr);
     QSize sizeHint() const;
 
 signals:
@@ -40,4 +40,4 @@ private:
   void drawOnSurface();
 };
 
-#endif // SCREEN_H
+#endif // SCREENWIDGET_H

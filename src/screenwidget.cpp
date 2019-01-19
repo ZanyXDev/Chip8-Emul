@@ -1,7 +1,7 @@
-#include "screen.h"
+#include "screenwidget.h"
 
 
-Screen::Screen( QWidget *parent)
+ScreenWidget::ScreenWidget( QWidget *parent)
     : QWidget(parent)
 {
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // set ideal size as minimum Qimage size/ Can expand, only
@@ -16,7 +16,7 @@ Screen::Screen( QWidget *parent)
     m_pixmap = new QPixmap ( sizeHint() );
 }
 
-QSize Screen::sizeHint() const
+QSize ScreenWidget::sizeHint() const
 {
     QSize size = QSize(zoom * DISPLAY_X, zoom * DISPLAY_Y);
     if (zoom >= 3)
@@ -27,13 +27,13 @@ QSize Screen::sizeHint() const
     return size;
 }
 
-void Screen::updateScreen(QBitArray display)
+void ScreenWidget::updateScreen(QBitArray display)
 {   
     m_display = display;
     update();
 }
 
-void Screen::drawOnSurface()
+void ScreenWidget::drawOnSurface()
 {
     QPainter painter(m_pixmap);
     if (zoom >= 3)
@@ -59,7 +59,7 @@ void Screen::drawOnSurface()
     }
 }
 
-void Screen::paintEvent(QPaintEvent *event)
+void ScreenWidget::paintEvent(QPaintEvent *event)
 {
     drawOnSurface();
 
@@ -70,7 +70,7 @@ void Screen::paintEvent(QPaintEvent *event)
     painter.drawPixmap(event->rect(), m_pixmap->scaled( size() , Qt::KeepAspectRatio),event->rect());
 }
 
-void Screen::drawImagePixel(QPainter *painter, int x, int y)
+void ScreenWidget::drawImagePixel(QPainter *painter, int x, int y)
 {
     QColor color;
     quint16 val = x + (y * DISPLAY_X );

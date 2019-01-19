@@ -19,7 +19,7 @@
 #include <QStyle>
 
 #include "mydefs.h"
-#include "screen.h"
+#include "screenwidget.h"
 #include "chip8emu.h"
 #include "cpuboxwidget.h"
 
@@ -70,7 +70,7 @@ private:
     QMenu* viewMenu;
 
     Chip8Emu *m_emul;
-    Screen* m_screen;
+    ScreenWidget *m_screen;
     CPUBoxWidget *m_debugCPU;
     const QString rsrcPath = ":res/images/";
 
