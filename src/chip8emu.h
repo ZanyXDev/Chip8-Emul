@@ -10,14 +10,14 @@
 #include <QStack>
 #include <QTimer>
 #include "mydefs.h"
-
+#include "display.h"
 
 class Chip8Emu : public QObject
 {
     Q_OBJECT
 public:
     explicit Chip8Emu(QObject *parent = nullptr);
-
+    void setDisplay( Display *display );
 signals:
     void ReadyToWork( bool flag);
     void updateScreen( QBitArray screen );
@@ -131,6 +131,7 @@ private:
     quint32 m_ElapsedTime;
 
     bool m_ExtendedMode;    // Chip8 (false) or SuperChip (true) mode
+    Display *m_display;
 };
 
 #endif // CHIP8EMU_H

@@ -6,6 +6,11 @@ Chip8Emu::Chip8Emu(QObject *parent)
     connect(&m_timer,&QTimer::timeout,this,&Chip8Emu::execute);
 }
 
+void Chip8Emu::setDisplay(Display *display)
+{
+    m_display = display;
+}
+
 void Chip8Emu::loadData2Memory(QByteArray &data)
 {
     initDevice();
@@ -575,7 +580,7 @@ void Chip8Emu::initDevice()
     opcode_count = 0 ;
     m_registers.fill( 0x0, MAX_REG );  // clear registers
     m_stack.clear();
-    m_screen = QBitArray( DISPLAY_X * DISPLAY_Y, false );
+    m_display->clear();
     m_keys.fill( false, KEY_PAD );  // All keys unPressed
     m_ExtendedMode = false;
     m_ElapsedTime = 0;
