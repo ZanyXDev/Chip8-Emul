@@ -14,7 +14,7 @@ public:
     void moveRight();
     void moveLeft();
 
-    bool drawPixel( quint16 idx, bool pixel);
+    bool drawPixel( quint8 x, quint8 y, bool pixel);
     bool getPixel( quint16 idx );
     void setHiResMode( bool mode);
     bool getHiResMode();
@@ -25,6 +25,8 @@ public slots:
 private:
     QBitArray m_screen;
     bool m_ExtendedMode;    // Chip8 (false) or SuperChip (true) mode
+    quint16 getIndex(quint8 x, quint8 y);
+
 };
 
 #endif // DISPLAY_H

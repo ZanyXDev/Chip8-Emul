@@ -57,7 +57,6 @@ private:
     void setRegI( quint16 m_value );
     quint16 getRegI();
 
-    quint16 getIndex(quint8 x, quint8 y);
 
     /**
      * @brief drawSprite

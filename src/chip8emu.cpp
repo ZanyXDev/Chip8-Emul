@@ -479,28 +479,21 @@ quint16 Chip8Emu::getRegI()
     return regI;
 }
 
-quint16 Chip8Emu::getIndex(quint8 x, quint8 y)
-{
-    quint16 val = x + ( y*DISPLAY_X );
-    return ( val > MAX_DISPLAY_SIZE )
-            ? MAX_DISPLAY_SIZE
-            : val;
-}
+
 
 void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
-{
-    quint8 maxLine;
+{   
     quint8 drw = '\0';    
     quint16 m_regI = getRegI();
 
-    maxLine = (( 0 == n ) | ( n > 16 ) )
+    quint8 maxLine = (( 0 == n ) | ( n > 16 ) )
             ? 16
             : n ; // check how many rows draw.
 
-    if ( m_regI +maxLine > m_memory.size() )
+    if ( m_regI + maxLine > m_memory.size() )
     {
         qDebug() << Q_FUNC_INFO
-                 << " Index out of range:" << (m_regI +maxLine )
+                 << " Index out of range:" << (m_regI + maxLine )
                  << " m_memory.size():" << m_memory.size();
         return;
     }
@@ -510,10 +503,13 @@ void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
         for (quint8 row = 0; row < maxLine; ++row)
         {
             drw = m_memory.at( m_regI +row );
+
             for (quint8 col = 0; col < 8; ++col)
             {                
-                if ( m_display->drawPixel( ( getIndex ( (vx + col), (vy + row )) ),
-                                           ( drw & (1 << (7 - col) ) ) ) )
+                if ( m_display->drawPixel( (vx + col), (vy + row ),
+                                           ( drw & (1 << (7 - col) ) )
+                                          )
+                     )
                 {
                     setRegister( REG_VF, 0x1);
                 }
