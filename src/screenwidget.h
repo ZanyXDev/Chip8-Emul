@@ -22,7 +22,7 @@ public:
 signals:
 
 public slots:
-    void updateScreen(QBitArray display);
+    void updateScreen();
 
 protected:
   void paintEvent(QPaintEvent *event);

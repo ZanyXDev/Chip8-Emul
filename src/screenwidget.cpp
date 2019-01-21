@@ -32,9 +32,8 @@ void ScreenWidget::setDisplay(Display *display)
     m_display = display;
 }
 
-void ScreenWidget::updateScreen(QBitArray display)
-{   
-    m_display_old = display;
+void ScreenWidget::updateScreen()
+{       
     update();
 }
 
@@ -81,7 +80,7 @@ void ScreenWidget::drawImagePixel(QPainter *painter, int x, int y)
     quint16 val = x + (y * DISPLAY_X );
     quint16 idx = ( val > MAX_DISPLAY_SIZE ) ? MAX_DISPLAY_SIZE : val;
 
-    if (m_display_old.at(idx))
+    if (m_display->getPixel(idx))
     {  //TODO add ability change color from menu
         color = Qt::black;
     }

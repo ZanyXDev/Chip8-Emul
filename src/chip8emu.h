@@ -75,9 +75,6 @@ private:
      * пикселя, то эта точка экрана очистится, а регистр VF установится в 1. То есть рисуем методом XOR.
      */
     void drawSprite(quint8 vx, quint8 vy, quint8 n);
-    void moveRight();
-    void moveLeft();
-    void moveDown( quint8 m_line );
 
     quint8 getRealKey (quint8 m_emu_key);
 
@@ -130,7 +127,6 @@ private:
     quint32 cycles_per_second;
     quint32 m_ElapsedTime;
 
-    bool m_ExtendedMode;    // Chip8 (false) or SuperChip (true) mode
     Display *m_display;
 };
 
