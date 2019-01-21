@@ -10,17 +10,17 @@
 #include <QStack>
 #include <QTimer>
 #include "mydefs.h"
-
+#include "display.h"
 
 class Chip8Emu : public QObject
 {
     Q_OBJECT
 public:
     explicit Chip8Emu(QObject *parent = nullptr);
-
+    void setDisplay( Display *display );
 signals:
     void ReadyToWork( bool flag);
-    void updateScreen( QBitArray screen );
+    void updateScreen();
     void finishExecute();
     void showDecodeOpCode( const QString &asm_txt );    
     void registerIChanged( quint16 value );
@@ -57,7 +57,6 @@ private:
     void setRegI( quint16 m_value );
     quint16 getRegI();
 
-    quint16 getIndex(quint8 x, quint8 y);
 
     /**
      * @brief drawSprite
@@ -75,9 +74,6 @@ private:
      * пикселя, то эта точка экрана очистится, а регистр VF установится в 1. То есть рисуем методом XOR.
      */
     void drawSprite(quint8 vx, quint8 vy, quint8 n);
-    void moveRight();
-    void moveLeft();
-    void moveDown( quint8 m_line );
 
     quint8 getRealKey (quint8 m_emu_key);
 
@@ -130,7 +126,7 @@ private:
     quint32 cycles_per_second;
     quint32 m_ElapsedTime;
 
-    bool m_ExtendedMode;    // Chip8 (false) or SuperChip (true) mode
+    Display *m_display;
 };
 
 #endif // CHIP8EMU_H

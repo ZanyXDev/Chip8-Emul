@@ -10,9 +10,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     // Move app window to center desktop
     this->move(calcDeskTopCenter(this->width(),this->height()));
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
-    m_emul = new Chip8Emu();
+    m_display = new Display();
 
-    //createActions();
+    m_emul = new Chip8Emu();
+    m_emul->setDisplay( m_display );
+
     setupFileActions();
     setupGameActions();
     setupOtherActions();
@@ -67,8 +69,6 @@ void MainWindow::readyToWork(bool flag)
     //    nextStepBtn->setEnabled( flag );
     //    stopGameBtn->setEnabled( flag );
 }
-
-
 
 void MainWindow::setupFileActions()
 {
@@ -127,7 +127,8 @@ void MainWindow::createGUI()
 {
     QDockWidget *dock = new QDockWidget(tr("Main chip-8 window"), this);
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    m_screen = new Screen();
+    m_screen = new ScreenWidget();
+    m_screen->setDisplay( m_display );
     dock->setWidget( m_screen );
     addDockWidget(Qt::LeftDockWidgetArea, dock);
     viewMenu->addAction(dock->toggleViewAction());
@@ -162,7 +163,7 @@ void MainWindow::createConnection()
     connect(this,&MainWindow::fileLoaded,m_emul,&Chip8Emu::loadData2Memory);    
     connect(this,&MainWindow::changeKeyState,m_emul,&Chip8Emu::changeKeyState);
 
-    connect(m_emul,&Chip8Emu::updateScreen,m_screen,&Screen::updateScreen);
+    connect(m_emul,&Chip8Emu::updateScreen,m_screen,&ScreenWidget::updateScreen);
     connect(m_emul,&Chip8Emu::showDecodeOpCode,textListing,&QTextEdit::append);
 
     connect(m_emul,&Chip8Emu::pointerCodeChanged,  m_debugCPU,&CPUBoxWidget::pointerCodeChanged);

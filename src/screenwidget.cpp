@@ -1,13 +1,13 @@
-#include "screen.h"
+#include "screenwidget.h"
 
 
-Screen::Screen( QWidget *parent)
+ScreenWidget::ScreenWidget( QWidget *parent)
     : QWidget(parent)
 {
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // set ideal size as minimum Qimage size/ Can expand, only
     zoom = 8; // TODO add ability change ixel image size default 8x8
 
-    m_display = QBitArray(DISPLAY_X * DISPLAY_Y,false);
+    m_display_old = QBitArray(DISPLAY_X * DISPLAY_Y,false);
 
     bgColor = Qt::darkGray;
     fgColor = Qt::black;
@@ -16,7 +16,7 @@ Screen::Screen( QWidget *parent)
     m_pixmap = new QPixmap ( sizeHint() );
 }
 
-QSize Screen::sizeHint() const
+QSize ScreenWidget::sizeHint() const
 {
     QSize size = QSize(zoom * DISPLAY_X, zoom * DISPLAY_Y);
     if (zoom >= 3)
@@ -27,13 +27,17 @@ QSize Screen::sizeHint() const
     return size;
 }
 
-void Screen::updateScreen(QBitArray display)
-{   
+void ScreenWidget::setDisplay(Display *display)
+{
     m_display = display;
+}
+
+void ScreenWidget::updateScreen()
+{       
     update();
 }
 
-void Screen::drawOnSurface()
+void ScreenWidget::drawOnSurface()
 {
     QPainter painter(m_pixmap);
     if (zoom >= 3)
@@ -59,7 +63,7 @@ void Screen::drawOnSurface()
     }
 }
 
-void Screen::paintEvent(QPaintEvent *event)
+void ScreenWidget::paintEvent(QPaintEvent *event)
 {
     drawOnSurface();
 
@@ -70,13 +74,13 @@ void Screen::paintEvent(QPaintEvent *event)
     painter.drawPixmap(event->rect(), m_pixmap->scaled( size() , Qt::KeepAspectRatio),event->rect());
 }
 
-void Screen::drawImagePixel(QPainter *painter, int x, int y)
+void ScreenWidget::drawImagePixel(QPainter *painter, int x, int y)
 {
     QColor color;
     quint16 val = x + (y * DISPLAY_X );
     quint16 idx = ( val > MAX_DISPLAY_SIZE ) ? MAX_DISPLAY_SIZE : val;
 
-    if (m_display.at(idx))
+    if (m_display->getPixel(idx))
     {  //TODO add ability change color from menu
         color = Qt::black;
     }

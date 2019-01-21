@@ -6,6 +6,11 @@ Chip8Emu::Chip8Emu(QObject *parent)
     connect(&m_timer,&QTimer::timeout,this,&Chip8Emu::execute);
 }
 
+void Chip8Emu::setDisplay(Display *display)
+{
+    m_display = display;
+}
+
 void Chip8Emu::loadData2Memory(QByteArray &data)
 {
     initDevice();
@@ -31,7 +36,7 @@ void Chip8Emu::startEmulation()
 void Chip8Emu::stepEmulation()
 {
     this->execute();
-    emit updateScreen(m_screen);
+    emit updateScreen();
 }
 
 void Chip8Emu::stopEmulation()
@@ -87,7 +92,7 @@ void Chip8Emu::executeNextOpcode()
             {
                 // 00Cn SCD n Прокрутить изображение на экране на n строк вниз
                 asmTextString.append(QString("SCD 0x%1 \t ; Scroll down %1 lines").arg(LO,0,16));
-                moveDown( LO );
+                m_display->moveDown( LO );
             }
 
             if ( X == 0xF )
@@ -97,12 +102,12 @@ void Chip8Emu::executeNextOpcode()
                 case 0xB:
                     // 00FB SCR Прокрутить изображение на экране на 4 пикселя вправо в режиме 128x64, либо на 2 пикселя в режиме 64x32
                     asmTextString.append(QString("SCR ; Scroll right on 4 (or 2 ) pixels"));
-                    moveRight();
+                    m_display->moveRight();
                     break;
                 case 0xC:
                     // 00FC SCL Прокрутить изображение на экране на 4 пикселя влево в режиме 128x64, либо на 2 пикселя в режиме 64x32
                     asmTextString.append(QString("SCL ; Scroll left on 4 (or 2 ) pixels"));
-                    moveLeft();
+                    m_display->moveLeft();
                     break;
                 case 0xD: // EXIT Завершить программу
                     asmTextString.append(QString("EXIT ; Shutdown programm"));
@@ -110,12 +115,12 @@ void Chip8Emu::executeNextOpcode()
                 case 0xE:
                     // 00FE LOW Выключить расширенный режим экрана. Переход на разрешение 64x32
                     asmTextString.append(QString("LOW ; Extend mode OFF"));
-                    m_ExtendedMode = false;
+                    m_display->setHiResMode( false );
                     break;
                 case 0xF:
                     // 00FF HIGH Включить расширенный режим экрана. Переход на разрешение 128x64
                     asmTextString.append(QString("HIGH ; Extend mode ON"));
-                    m_ExtendedMode = true;
+                    m_display->setHiResMode( true );
                     break;
                 default:
                     break;
@@ -455,10 +460,6 @@ void Chip8Emu::setRegister(quint8 m_reg, quint8 m_value)
 
 quint8 Chip8Emu::getRegister(quint8 m_reg)
 {
-    /**
-   * @todo QVariant() can't convert to quint8 or quint16
-   * @note remove modelReg and restore QVector<quint8>
-  */
     return ( m_reg < MAX_REG)
             ? m_registers.at(m_reg)
             : 0;
@@ -478,81 +479,40 @@ quint16 Chip8Emu::getRegI()
     return regI;
 }
 
-quint16 Chip8Emu::getIndex(quint8 x, quint8 y)
-{
-    quint16 val = x + ( y*DISPLAY_X );
-    return ( val > MAX_DISPLAY_SIZE )
-            ? MAX_DISPLAY_SIZE
-            : val;
-}
 
-// -- Draw function
-void Chip8Emu::moveDown(quint8 m_line)
-{
-    qDebug() << "move down: " << m_line;
-}
-
-void Chip8Emu::moveRight()
-{
-    qDebug() << "move right, mode:" << m_ExtendedMode;
-}
-
-void Chip8Emu::moveLeft()
-{
-    qDebug() << "move left, mode:" << m_ExtendedMode;
-}
 
 void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
-{
-    bool newPixel;
-    bool existPixel = false;
-    quint8 maxLine;
-    quint8 drw = '\0';
-    quint16 idx =0;
+{   
+    quint8 drw = '\0';    
     quint16 m_regI = getRegI();
 
-    maxLine = (( 0 == n ) | ( n > 16 ) )
+    quint8 maxLine = (( 0 == n ) | ( n > 16 ) )
             ? 16
             : n ; // check how many rows draw.
 
-    if (!m_ExtendedMode)
+    if ( m_regI + maxLine > m_memory.size() )
+    {
+        qDebug() << Q_FUNC_INFO
+                 << " Index out of range:" << (m_regI + maxLine )
+                 << " m_memory.size():" << m_memory.size();
+        return;
+    }
+
+    if ( !m_display->getHiResMode() )
     {
         for (quint8 row = 0; row < maxLine; ++row)
         {
-#ifdef DEBUG
-            if ( m_regI +row < m_memory.size() )
-            {
-                drw = m_memory.at( m_regI +row );
-            }
-            else
-            {
-                qDebug() << Q_FUNC_INFO << " Index out of range:" << (m_regI +row) << " m_memory.size():" << m_memory.size();
-            }
-#else
             drw = m_memory.at( m_regI +row );
-#endif
+
             for (quint8 col = 0; col < 8; ++col)
-            {
-                newPixel = drw & (1 << (7 - col));
-                idx = getIndex ( (vx + col), (vy + row ));
-#ifdef DEBUG
-                if ( idx < m_screen.size() )
-                {
-                    existPixel = m_screen.testBit( idx );
-                }
-                else
-                {
-                    qDebug() << Q_FUNC_INFO << " Index (m_screen) out of range:" << (idx) << " m_screen.size():" << m_screen.size();
-                }
-#else
-                existPixel = m_screen.testBit( idx );
-#endif
-                if ( existPixel )
+            {                
+                if ( m_display->drawPixel( (vx + col), (vy + row ),
+                                           ( drw & (1 << (7 - col) ) )
+                                          )
+                     )
                 {
                     setRegister( REG_VF, 0x1);
                 }
-
-                m_screen.setBit( idx, (existPixel ^ newPixel) );
             }
         }
     }
@@ -575,9 +535,9 @@ void Chip8Emu::initDevice()
     opcode_count = 0 ;
     m_registers.fill( 0x0, MAX_REG );  // clear registers
     m_stack.clear();
-    m_screen = QBitArray( DISPLAY_X * DISPLAY_Y, false );
+    m_display->clear();
     m_keys.fill( false, KEY_PAD );  // All keys unPressed
-    m_ExtendedMode = false;
+    m_display->setHiResMode( false );
     m_ElapsedTime = 0;
 
     loadFontToMemory();
@@ -609,7 +569,7 @@ void Chip8Emu::execute()
 
     //логическое выражение ? выражение 1 : выражение 2
 
-    if (opcode_count < ( m_ExtendedMode
+    if (opcode_count < ( m_display->getHiResMode()
                          ? LAPS_TYPE_1
                          : LAPS_TYPE_2) )
     {
@@ -630,7 +590,7 @@ void Chip8Emu::execute()
         emit showTime(str);
 
 #endif
-        emit updateScreen(m_screen);
+        emit updateScreen();
         opcode_count = 0;
         m_ElapsedTime = 0;
     }

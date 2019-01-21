@@ -1,33 +1,32 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
+#include <QBitArray>
 
-#include <QWidget>
-#include <QPaintEvent>
+#include "mydefs.h"
 
-class Display : public QWidget
+class Display : public QObject
 {
     Q_OBJECT
 public:
-    explicit Display(QWidget *parent = nullptr);
+    explicit Display(QObject *parent = nullptr);
+    void clear();
+    void moveDown(quint8 m_line);
+    void moveRight();
+    void moveLeft();
 
-    QSize minimumSizeHint() const override;
-    QSize sizeHint() const override;
-    void setAntialiased(bool antialiased);
+    bool drawPixel( quint8 x, quint8 y, bool pixel);
+    bool getPixel( quint16 idx );
+    void setHiResMode( bool mode);
+    bool getHiResMode();
 signals:
 
 public slots:
 
-protected:
-    void paintEvent(QPaintEvent *event) override;
-    void resizeEvent(QResizeEvent *event) override;
-
 private:
-    void debugDraw();
+    QBitArray m_screen;
+    bool m_ExtendedMode;    // Chip8 (false) or SuperChip (true) mode
+    quint16 getIndex(quint8 x, quint8 y);
 
-    QImage m_screenImage;
-    QColor bgColor;
-    QColor fgColor;
-    bool antialiased;
 };
 
 #endif // DISPLAY_H
