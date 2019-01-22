@@ -11,6 +11,11 @@ void Chip8Emu::setDisplay(Display *display)
     m_display = display;
 }
 
+void Chip8Emu::setKeyboard(Keyboard *m_key)
+{
+    m_keyboard = m_key;
+}
+
 void Chip8Emu::loadData2Memory(QByteArray &data)
 {
     initDevice();
@@ -61,6 +66,7 @@ void Chip8Emu::executeNextOpcode()
     quint8 Y  = (opCode & 0x00F0) >> 4;
     quint8 KK = (opCode & 0x00FF);
     quint16 NNN = (opCode & 0x0FFF);
+    quint8 currentKey;
 
     switch ( HI )
     {
@@ -319,18 +325,20 @@ void Chip8Emu::executeNextOpcode()
     case 0xE:
         if ( KK == 0x9E)
         {
-            // Ex9E SKP Vx Пропустить следующую команду если клавиша, номер которой хранится в регистре Vx, нажата
+            // Ex9E SKP Vx Пропустить следующую команду если клавиша,
+            // номер которой хранится в регистре Vx, нажата
             asmTextString.append(QString("SKP V%1 \t ; Skip next instruction if key number (save register V%1) pressed ").arg( X,0,16 ) );
-            if (m_keys.at( getRealKey ( getRegister( X ) )))
+            if (m_keyboard->isPressed( getRegister( X ) ) )
             {
                 PC+=2;
             }
         }
         if ( KK == 0xA1)
         {
-            // ExA1 SKNP Vx Пропустить следующую команду если клавиша, номер которой хранится в регистре Vx, не нажата
+            // ExA1 SKNP Vx Пропустить следующую команду если клавиша,
+            // номер которой хранится в регистре Vx, не нажата
             asmTextString.append(QString("SKNP V%1 \t ; Skip next instruction if key number (save register V%1) not pressed ").arg( X,0,16 ) );
-            if (!m_keys.at( getRealKey ( getRegister( X ) )))
+            if (m_keyboard->isNotPressed( getRegister( X ) ) )
             {
                 PC+=2;
             }
@@ -344,21 +352,19 @@ void Chip8Emu::executeNextOpcode()
             break;
         case 0x0A:
             /**
-         * Fx0A LD Vx, K Ждать нажатия любой клавиши.
-         * Как только клавиша будет нажата записать ее номер в регистр Vx и перейти к выполнению следующей инструкции.
-         */
+              * Fx0A LD Vx, K Ждать нажатия любой клавиши.
+              * Как только клавиша будет нажата записать ее номер в
+              * регистр Vx и перейти к выполнению следующей инструкции.
+              */
             asmTextString.append(QString("LD V%1, K \t ; Wait any key pressed, after SET register V%1 = KEY_NUMBER ").arg( X,0,16 ) );
             PC-=2;
-            for (quint8 i=0; i < 16; ++i)
+            currentKey = m_keyboard->anyKeyPressed();
+            if ( currentKey != KEY_PAD )
             {
-                if (m_keys.testBit(i))
-                {
-                    setRegister( X, getRealKey(i) );
-                    PC+=2;
-                    break;
-                }
+                setRegister( X, currentKey );
+                PC+=2;
+                break;
             }
-
             break;
         case 0x15: // Fx15 LD DT, Vx Установить значение таймера задержки равным значению регистра Vx
             asmTextString.append(QString("LD DT, V%1 \t ; Set register DATA_TIMER = V%1 ").arg( X,0,16 ) );
@@ -381,22 +387,7 @@ void Chip8Emu::executeNextOpcode()
             // Например, нам надо вывести на экран цифру 5. Для этого загружаем в Vx число 5.
             // Потом команда LD F, Vx загрузит адрес спрайта, содержащего цифру 5, в регистр I
             asmTextString.append(QString("LD F, V%1 \t ; Show sprite font ").arg( X,0,16 ) );
-
-#ifdef DEBUG
-        {
-            quint16 curRegValue = getRegister( X );
-            quint16 res = curRegValue * SMALL_FONT_SIZE;
-            qDebug() << Q_FUNC_INFO <<" case 0x29: register " << X
-                                    << " has value:" << curRegValue
-                                    << " new value register I:" << res;
-
-            setRegI( res );
-        }
-
-#else
             setRegI( getRegister( X ) * SMALL_FONT_SIZE );
-#endif
-
             break;
         case 0x30:
             // Fx30 LD HF, Vx Работает подобно команде Fx29, только загружает спрайты размером 8x10 пикселей
@@ -429,9 +420,7 @@ void Chip8Emu::executeNextOpcode()
         asmTextString.append(QString("\t ;Don't decode ERROR"));
         break;
     }
-#ifdef DEBUG
-    qDebug() << QString("0x%1: %2").arg(PC,0,16).arg(asmTextString);
-#endif
+
     emit showDecodeOpCode ( QString("0x%1:\t%2\t%3").arg(PC,0,16).arg(opCode,0,16).arg(asmTextString) );
     PC+=2;
     emit pointerCodeChanged( PC );
@@ -722,49 +711,8 @@ void Chip8Emu::loadFontToMemory()
              << 0xfc << 0x80 << 0x80 << 0x80 << 0xff;
     m_memory << 0xff << 0x80 << 0x80 << 0x80 << 0x80
              << 0xfc << 0x80 << 0x80 << 0x80 << 0x80; // F
-
 }
 
-quint8 Chip8Emu::getRealKey (quint8 m_emu_key)
-{
-    /**  Real      Emu    ScanCode
-  * +-+-+-+-+  | +-+-+-+-+  | +-+-+-+-+
-  * |1|2|3|C|  | |1|2|3|4|  | |1|2|3|12|
-  * +-+-+-+-+  | +-+-+-+-+  | +-+-+-+-+
-  * |4|5|6|D|  | |Q|W|E|R|  | |4|5|6|13|
-  * +-+-+-+-+  | +-+-+-+-+  | +-+-+-+-+
-  * |7|8|9|E|  | |A|S|D|F|  | |7|8|9|14|
-  * +-+-+-+-+  | +-+-+-+-+  | +-+-+-+-+
-  * |A|0|B|F|  | |Z|X|C|V|  | |10|0|11|15|
-  * +-+-+-+-+  | +-+-+-+-+  | +-+-+-+-+
-  **/
-
-    quint8 value;
-    switch (m_emu_key)
-    {
-    case 0: value = 1; break;
-    case 1: value = 2; break;
-    case 2: value = 3; break;
-    case 3: value = 12; break;
-    case 4: value = 4; break;
-    case 5: value = 5; break;
-    case 6: value = 6; break;
-    case 7: value = 13; break;
-    case 8: value = 7; break;
-    case 9: value = 8; break;
-    case 10: value = 9; break;
-    case 11: value = 14; break;
-    case 12: value = 10; break;
-    case 13: value = 0; break;
-    case 14: value = 11; break;
-    case 15: value = 15; break;
-    default:
-        value = 0;
-        break;
-    }
-    //qDebug() << "Real key code:" << value;
-    return value;
-}
 
 
 

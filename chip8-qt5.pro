@@ -25,7 +25,8 @@ HEADERS += \
     src/chip8emu.h \
     src/mydefs.h \	
     src/cpuboxwidget.h \
-    src/display.h
+    src/display.h \
+    src/keyboard.h
 
 SOURCES = \
     src/main.cpp \
@@ -33,7 +34,8 @@ SOURCES = \
     src/screenwidget.cpp \
     src/chip8emu.cpp \
     src/cpuboxwidget.cpp \
-    src/display.cpp
+    src/display.cpp \
+    src/keyboard.cpp
 
 CONFIG += \
     console \
