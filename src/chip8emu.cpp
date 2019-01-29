@@ -6,6 +6,16 @@ Chip8Emu::Chip8Emu(QObject *parent)
     connect(&m_timer,&QTimer::timeout,this,&Chip8Emu::execute);
 }
 
+void Chip8Emu::setDisplay(Display *display)
+{
+    m_display = display;
+}
+
+void Chip8Emu::setKeyboard(Keyboard *m_key)
+{
+    m_keyboard = m_key;
+}
+
 void Chip8Emu::loadData2Memory(QByteArray &data)
 {
     initDevice();
@@ -31,7 +41,7 @@ void Chip8Emu::startEmulation()
 void Chip8Emu::stepEmulation()
 {
     this->execute();
-    emit updateScreen(m_screen);
+    emit updateScreen();
 }
 
 void Chip8Emu::stopEmulation()
@@ -56,6 +66,7 @@ void Chip8Emu::executeNextOpcode()
     quint8 Y  = (opCode & 0x00F0) >> 4;
     quint8 KK = (opCode & 0x00FF);
     quint16 NNN = (opCode & 0x0FFF);
+    quint8 currentKey;
 
     switch ( HI )
     {
@@ -87,7 +98,7 @@ void Chip8Emu::executeNextOpcode()
             {
                 // 00Cn SCD n Прокрутить изображение на экране на n строк вниз
                 asmTextString.append(QString("SCD 0x%1 \t ; Scroll down %1 lines").arg(LO,0,16));
-                moveDown( LO );
+                m_display->moveDown( LO );
             }
 
             if ( X == 0xF )
@@ -97,12 +108,12 @@ void Chip8Emu::executeNextOpcode()
                 case 0xB:
                     // 00FB SCR Прокрутить изображение на экране на 4 пикселя вправо в режиме 128x64, либо на 2 пикселя в режиме 64x32
                     asmTextString.append(QString("SCR ; Scroll right on 4 (or 2 ) pixels"));
-                    moveRight();
+                    m_display->moveRight();
                     break;
                 case 0xC:
                     // 00FC SCL Прокрутить изображение на экране на 4 пикселя влево в режиме 128x64, либо на 2 пикселя в режиме 64x32
                     asmTextString.append(QString("SCL ; Scroll left on 4 (or 2 ) pixels"));
-                    moveLeft();
+                    m_display->moveLeft();
                     break;
                 case 0xD: // EXIT Завершить программу
                     asmTextString.append(QString("EXIT ; Shutdown programm"));
@@ -110,12 +121,12 @@ void Chip8Emu::executeNextOpcode()
                 case 0xE:
                     // 00FE LOW Выключить расширенный режим экрана. Переход на разрешение 64x32
                     asmTextString.append(QString("LOW ; Extend mode OFF"));
-                    m_ExtendedMode = false;
+                    m_display->setHiResMode( false );
                     break;
                 case 0xF:
                     // 00FF HIGH Включить расширенный режим экрана. Переход на разрешение 128x64
                     asmTextString.append(QString("HIGH ; Extend mode ON"));
-                    m_ExtendedMode = true;
+                    m_display->setHiResMode( true );
                     break;
                 default:
                     break;
@@ -314,18 +325,20 @@ void Chip8Emu::executeNextOpcode()
     case 0xE:
         if ( KK == 0x9E)
         {
-            // Ex9E SKP Vx Пропустить следующую команду если клавиша, номер которой хранится в регистре Vx, нажата
+            // Ex9E SKP Vx Пропустить следующую команду если клавиша,
+            // номер которой хранится в регистре Vx, нажата
             asmTextString.append(QString("SKP V%1 \t ; Skip next instruction if key number (save register V%1) pressed ").arg( X,0,16 ) );
-            if (m_keys.at( getRealKey ( getRegister( X ) )))
+            if (m_keyboard->isPressed( getRegister( X ) ) )
             {
                 PC+=2;
             }
         }
         if ( KK == 0xA1)
         {
-            // ExA1 SKNP Vx Пропустить следующую команду если клавиша, номер которой хранится в регистре Vx, не нажата
+            // ExA1 SKNP Vx Пропустить следующую команду если клавиша,
+            // номер которой хранится в регистре Vx, не нажата
             asmTextString.append(QString("SKNP V%1 \t ; Skip next instruction if key number (save register V%1) not pressed ").arg( X,0,16 ) );
-            if (!m_keys.at( getRealKey ( getRegister( X ) )))
+            if (m_keyboard->isNotPressed( getRegister( X ) ) )
             {
                 PC+=2;
             }
@@ -339,21 +352,19 @@ void Chip8Emu::executeNextOpcode()
             break;
         case 0x0A:
             /**
-         * Fx0A LD Vx, K Ждать нажатия любой клавиши.
-         * Как только клавиша будет нажата записать ее номер в регистр Vx и перейти к выполнению следующей инструкции.
-         */
+              * Fx0A LD Vx, K Ждать нажатия любой клавиши.
+              * Как только клавиша будет нажата записать ее номер в
+              * регистр Vx и перейти к выполнению следующей инструкции.
+              */
             asmTextString.append(QString("LD V%1, K \t ; Wait any key pressed, after SET register V%1 = KEY_NUMBER ").arg( X,0,16 ) );
             PC-=2;
-            for (quint8 i=0; i < 16; ++i)
+            currentKey = m_keyboard->anyKeyPressed();
+            if ( currentKey != KEY_PAD )
             {
-                if (m_keys.testBit(i))
-                {
-                    setRegister( X, getRealKey(i) );
-                    PC+=2;
-                    break;
-                }
+                setRegister( X, currentKey );
+                PC+=2;
+                break;
             }
-
             break;
         case 0x15: // Fx15 LD DT, Vx Установить значение таймера задержки равным значению регистра Vx
             asmTextString.append(QString("LD DT, V%1 \t ; Set register DATA_TIMER = V%1 ").arg( X,0,16 ) );
@@ -376,22 +387,7 @@ void Chip8Emu::executeNextOpcode()
             // Например, нам надо вывести на экран цифру 5. Для этого загружаем в Vx число 5.
             // Потом команда LD F, Vx загрузит адрес спрайта, содержащего цифру 5, в регистр I
             asmTextString.append(QString("LD F, V%1 \t ; Show sprite font ").arg( X,0,16 ) );
-
-#ifdef DEBUG
-        {
-            quint16 curRegValue = getRegister( X );
-            quint16 res = curRegValue * SMALL_FONT_SIZE;
-            qDebug() << Q_FUNC_INFO <<" case 0x29: register " << X
-                                    << " has value:" << curRegValue
-                                    << " new value register I:" << res;
-
-            setRegI( res );
-        }
-
-#else
             setRegI( getRegister( X ) * SMALL_FONT_SIZE );
-#endif
-
             break;
         case 0x30:
             // Fx30 LD HF, Vx Работает подобно команде Fx29, только загружает спрайты размером 8x10 пикселей
@@ -424,9 +420,7 @@ void Chip8Emu::executeNextOpcode()
         asmTextString.append(QString("\t ;Don't decode ERROR"));
         break;
     }
-#ifdef DEBUG
-    qDebug() << QString("0x%1: %2").arg(PC,0,16).arg(asmTextString);
-#endif
+
     emit showDecodeOpCode ( QString("0x%1:\t%2\t%3").arg(PC,0,16).arg(opCode,0,16).arg(asmTextString) );
     PC+=2;
     emit pointerCodeChanged( PC );
@@ -455,10 +449,6 @@ void Chip8Emu::setRegister(quint8 m_reg, quint8 m_value)
 
 quint8 Chip8Emu::getRegister(quint8 m_reg)
 {
-    /**
-   * @todo QVariant() can't convert to quint8 or quint16
-   * @note remove modelReg and restore QVector<quint8>
-  */
     return ( m_reg < MAX_REG)
             ? m_registers.at(m_reg)
             : 0;
@@ -478,81 +468,40 @@ quint16 Chip8Emu::getRegI()
     return regI;
 }
 
-quint16 Chip8Emu::getIndex(quint8 x, quint8 y)
-{
-    quint16 val = x + ( y*DISPLAY_X );
-    return ( val > MAX_DISPLAY_SIZE )
-            ? MAX_DISPLAY_SIZE
-            : val;
-}
 
-// -- Draw function
-void Chip8Emu::moveDown(quint8 m_line)
-{
-    qDebug() << "move down: " << m_line;
-}
-
-void Chip8Emu::moveRight()
-{
-    qDebug() << "move right, mode:" << m_ExtendedMode;
-}
-
-void Chip8Emu::moveLeft()
-{
-    qDebug() << "move left, mode:" << m_ExtendedMode;
-}
 
 void Chip8Emu::drawSprite(quint8 vx, quint8 vy, quint8 n)
-{
-    bool newPixel;
-    bool existPixel = false;
-    quint8 maxLine;
-    quint8 drw = '\0';
-    quint16 idx =0;
+{   
+    quint8 drw = '\0';    
     quint16 m_regI = getRegI();
 
-    maxLine = (( 0 == n ) | ( n > 16 ) )
+    quint8 maxLine = (( 0 == n ) | ( n > 16 ) )
             ? 16
             : n ; // check how many rows draw.
 
-    if (!m_ExtendedMode)
+    if ( m_regI + maxLine > m_memory.size() )
+    {
+        qDebug() << Q_FUNC_INFO
+                 << " Index out of range:" << (m_regI + maxLine )
+                 << " m_memory.size():" << m_memory.size();
+        return;
+    }
+
+    if ( !m_display->getHiResMode() )
     {
         for (quint8 row = 0; row < maxLine; ++row)
         {
-#ifdef DEBUG
-            if ( m_regI +row < m_memory.size() )
-            {
-                drw = m_memory.at( m_regI +row );
-            }
-            else
-            {
-                qDebug() << Q_FUNC_INFO << " Index out of range:" << (m_regI +row) << " m_memory.size():" << m_memory.size();
-            }
-#else
             drw = m_memory.at( m_regI +row );
-#endif
+
             for (quint8 col = 0; col < 8; ++col)
-            {
-                newPixel = drw & (1 << (7 - col));
-                idx = getIndex ( (vx + col), (vy + row ));
-#ifdef DEBUG
-                if ( idx < m_screen.size() )
-                {
-                    existPixel = m_screen.testBit( idx );
-                }
-                else
-                {
-                    qDebug() << Q_FUNC_INFO << " Index (m_screen) out of range:" << (idx) << " m_screen.size():" << m_screen.size();
-                }
-#else
-                existPixel = m_screen.testBit( idx );
-#endif
-                if ( existPixel )
+            {                
+                if ( m_display->drawPixel( (vx + col), (vy + row ),
+                                           ( drw & (1 << (7 - col) ) )
+                                          )
+                     )
                 {
                     setRegister( REG_VF, 0x1);
                 }
-
-                m_screen.setBit( idx, (existPixel ^ newPixel) );
             }
         }
     }
@@ -575,9 +524,9 @@ void Chip8Emu::initDevice()
     opcode_count = 0 ;
     m_registers.fill( 0x0, MAX_REG );  // clear registers
     m_stack.clear();
-    m_screen = QBitArray( DISPLAY_X * DISPLAY_Y, false );
+    m_display->clear();
     m_keys.fill( false, KEY_PAD );  // All keys unPressed
-    m_ExtendedMode = false;
+    m_display->setHiResMode( false );
     m_ElapsedTime = 0;
 
     loadFontToMemory();
@@ -609,7 +558,7 @@ void Chip8Emu::execute()
 
     //логическое выражение ? выражение 1 : выражение 2
 
-    if (opcode_count < ( m_ExtendedMode
+    if (opcode_count < ( m_display->getHiResMode()
                          ? LAPS_TYPE_1
                          : LAPS_TYPE_2) )
     {
@@ -630,7 +579,7 @@ void Chip8Emu::execute()
         emit showTime(str);
 
 #endif
-        emit updateScreen(m_screen);
+        emit updateScreen();
         opcode_count = 0;
         m_ElapsedTime = 0;
     }
@@ -762,49 +711,8 @@ void Chip8Emu::loadFontToMemory()
              << 0xfc << 0x80 << 0x80 << 0x80 << 0xff;
     m_memory << 0xff << 0x80 << 0x80 << 0x80 << 0x80
              << 0xfc << 0x80 << 0x80 << 0x80 << 0x80; // F
-
 }
 
-quint8 Chip8Emu::getRealKey (quint8 m_emu_key)
-{
-    /**  Real      Emu    ScanCode
-  * +-+-+-+-+  | +-+-+-+-+  | +-+-+-+-+
-  * |1|2|3|C|  | |1|2|3|4|  | |1|2|3|12|
-  * +-+-+-+-+  | +-+-+-+-+  | +-+-+-+-+
-  * |4|5|6|D|  | |Q|W|E|R|  | |4|5|6|13|
-  * +-+-+-+-+  | +-+-+-+-+  | +-+-+-+-+
-  * |7|8|9|E|  | |A|S|D|F|  | |7|8|9|14|
-  * +-+-+-+-+  | +-+-+-+-+  | +-+-+-+-+
-  * |A|0|B|F|  | |Z|X|C|V|  | |10|0|11|15|
-  * +-+-+-+-+  | +-+-+-+-+  | +-+-+-+-+
-  **/
-
-    quint8 value;
-    switch (m_emu_key)
-    {
-    case 0: value = 1; break;
-    case 1: value = 2; break;
-    case 2: value = 3; break;
-    case 3: value = 12; break;
-    case 4: value = 4; break;
-    case 5: value = 5; break;
-    case 6: value = 6; break;
-    case 7: value = 13; break;
-    case 8: value = 7; break;
-    case 9: value = 8; break;
-    case 10: value = 9; break;
-    case 11: value = 14; break;
-    case 12: value = 10; break;
-    case 13: value = 0; break;
-    case 14: value = 11; break;
-    case 15: value = 15; break;
-    default:
-        value = 0;
-        break;
-    }
-    //qDebug() << "Real key code:" << value;
-    return value;
-}
 
 
 

@@ -10,19 +10,21 @@
 #include <QStack>
 #include <QTimer>
 #include "mydefs.h"
-
+#include "display.h"
+#include "keyboard.h"
 
 class Chip8Emu : public QObject
 {
     Q_OBJECT
 public:
     explicit Chip8Emu(QObject *parent = nullptr);
-
+    void setDisplay( Display *display );
+    void setKeyboard( Keyboard *m_key );
 signals:
     void ReadyToWork( bool flag);
-    void updateScreen( QBitArray screen );
+    void updateScreen();
     void finishExecute();
-    void showDecodeOpCode( const QString &asm_txt );    
+    void showDecodeOpCode( const QString &asm_txt );
     void registerIChanged( quint16 value );
     void pointerCodeChanged( quint16 value);
     void delayTimerChanged( quint8 value );
@@ -41,7 +43,7 @@ public slots:
     void loadData2Memory(QByteArray &data);
     void startEmulation();
     void stepEmulation();
-    void stopEmulation();   
+    void stopEmulation();
     void changeKeyState(quint8 key, bool state);
 
 private slots:
@@ -57,7 +59,6 @@ private:
     void setRegI( quint16 m_value );
     quint16 getRegI();
 
-    quint16 getIndex(quint8 x, quint8 y);
 
     /**
      * @brief drawSprite
@@ -75,11 +76,7 @@ private:
      * пикселя, то эта точка экрана очистится, а регистр VF установится в 1. То есть рисуем методом XOR.
      */
     void drawSprite(quint8 vx, quint8 vy, quint8 n);
-    void moveRight();
-    void moveLeft();
-    void moveDown( quint8 m_line );
 
-    quint8 getRealKey (quint8 m_emu_key);
 
     /**
      * @brief getSumCF sum x and y with carry flag
@@ -111,11 +108,11 @@ private:
 
     void loadFontToMemory();
     QTimer m_timer;
-    // FIXME memory, registers and stack need convert to QVector
+
     QVector<quint8> m_memory;    // 4k ram memory
     QVector<quint8> m_registers;      // 16 registers 8bit size;
     QByteArray m_smallFont; // size 16x5 small font
-    QByteArray m_bigFont;   // size 16x10 big font    
+    QByteArray m_bigFont;   // size 16x10 big font
     QStack<quint16> m_stack;     // deep 16 levels;
     QBitArray m_screen;
     QBitArray m_keys;
@@ -130,7 +127,8 @@ private:
     quint32 cycles_per_second;
     quint32 m_ElapsedTime;
 
-    bool m_ExtendedMode;    // Chip8 (false) or SuperChip (true) mode
+    Display *m_display;
+    Keyboard *m_keyboard;
 };
 
 #endif // CHIP8EMU_H

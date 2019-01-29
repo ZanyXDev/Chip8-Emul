@@ -1,5 +1,5 @@
-#ifndef SCREEN_H
-#define SCREEN_H
+#ifndef SCREENWIDGET_H
+#define SCREENWIDGET_H
 
 #include <QWidget>
 #include <QBitArray>
@@ -10,19 +10,19 @@
 #include <QPixmap>
 
 #include "mydefs.h"
+#include "display.h"
 
-
-class Screen : public QWidget
+class ScreenWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Screen(QWidget *parent = nullptr);
+    explicit ScreenWidget(QWidget *parent = nullptr);
     QSize sizeHint() const;
-
+    void setDisplay( Display *display );
 signals:
 
 public slots:
-    void updateScreen(QBitArray display);
+    void updateScreen();
 
 protected:
   void paintEvent(QPaintEvent *event);
@@ -32,12 +32,15 @@ private:
   QColor bgColor;
   QColor fgColor;
   QColor lineColor;
-  QBitArray m_display;
+  QBitArray m_display_old;
   int zoom;
+  Display *m_display;
+
 
   void drawImagePixel(QPainter *painter, int x, int y);
 
   void drawOnSurface();
+
 };
 
-#endif // SCREEN_H
+#endif // SCREENWIDGET_H

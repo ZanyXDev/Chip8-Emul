@@ -10,9 +10,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     // Move app window to center desktop
     this->move(calcDeskTopCenter(this->width(),this->height()));
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
-    m_emul = new Chip8Emu();
+    m_display = new Display();
+    m_keyboard = new Keyboard();
 
-    //createActions();
+    m_emul = new Chip8Emu();
+    m_emul->setDisplay( m_display );
+    m_emul->setKeyboard( m_keyboard );
+
     setupFileActions();
     setupGameActions();
     setupOtherActions();
@@ -67,8 +71,6 @@ void MainWindow::readyToWork(bool flag)
     //    nextStepBtn->setEnabled( flag );
     //    stopGameBtn->setEnabled( flag );
 }
-
-
 
 void MainWindow::setupFileActions()
 {
@@ -127,7 +129,8 @@ void MainWindow::createGUI()
 {
     QDockWidget *dock = new QDockWidget(tr("Main chip-8 window"), this);
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    m_screen = new Screen();
+    m_screen = new ScreenWidget();
+    m_screen->setDisplay( m_display );
     dock->setWidget( m_screen );
     addDockWidget(Qt::LeftDockWidgetArea, dock);
     viewMenu->addAction(dock->toggleViewAction());
@@ -160,9 +163,9 @@ void MainWindow::createConnection()
     connect(m_emul,&Chip8Emu::showTime,this,&);
 */
     connect(this,&MainWindow::fileLoaded,m_emul,&Chip8Emu::loadData2Memory);    
-    connect(this,&MainWindow::changeKeyState,m_emul,&Chip8Emu::changeKeyState);
+    connect(this,&MainWindow::changeKeyState,m_keyboard,&Keyboard::changeKeyState);
 
-    connect(m_emul,&Chip8Emu::updateScreen,m_screen,&Screen::updateScreen);
+    connect(m_emul,&Chip8Emu::updateScreen,m_screen,&ScreenWidget::updateScreen);
     connect(m_emul,&Chip8Emu::showDecodeOpCode,textListing,&QTextEdit::append);
 
     connect(m_emul,&Chip8Emu::pointerCodeChanged,  m_debugCPU,&CPUBoxWidget::pointerCodeChanged);
@@ -177,24 +180,35 @@ void MainWindow::createConnection()
 
 quint8 MainWindow::mapKey(int mkey)
 {
+    /**  Real      Emu
+  * +-+-+-+-+  | +-+-+-+-+
+  * |1|2|3|C|  | |1|2|3|4|
+  * +-+-+-+-+  | +-+-+-+-+
+  * |4|5|6|D|  | |Q|W|E|R|
+  * +-+-+-+-+  | +-+-+-+-+
+  * |7|8|9|E|  | |A|S|D|F|
+  * +-+-+-+-+  | +-+-+-+-+
+  * |A|0|B|F|  | |Z|X|C|V|
+  * +-+-+-+-+  | +-+-+-+-+
+  **/
     quint8 m_key = '\0';
     switch ( mkey )
     {
-    case Qt::Key_1: m_key = 0;  break;
-    case Qt::Key_2: m_key = 1;  break;
-    case Qt::Key_3: m_key = 2;  break;
-    case Qt::Key_4: m_key = 3;  break;
+    case Qt::Key_1: m_key = 1;  break;
+    case Qt::Key_2: m_key = 2;  break;
+    case Qt::Key_3: m_key = 3;  break;
+    case Qt::Key_4: m_key = 12;  break;
     case Qt::Key_Q: m_key = 4;  break;
     case Qt::Key_W: m_key = 5;  break;
     case Qt::Key_E: m_key = 6;  break;
-    case Qt::Key_R: m_key = 7;  break;
-    case Qt::Key_A: m_key = 8;  break;
-    case Qt::Key_S: m_key = 9;  break;
-    case Qt::Key_D: m_key = 10; break;
-    case Qt::Key_F: m_key = 11; break;
-    case Qt::Key_Z: m_key = 12; break;
-    case Qt::Key_X: m_key = 13; break;
-    case Qt::Key_C: m_key = 14; break;
+    case Qt::Key_R: m_key = 13;  break;
+    case Qt::Key_A: m_key = 7;  break;
+    case Qt::Key_S: m_key = 8;  break;
+    case Qt::Key_D: m_key = 9; break;
+    case Qt::Key_F: m_key = 15; break;
+    case Qt::Key_Z: m_key = 10; break;
+    case Qt::Key_X: m_key = 0; break;
+    case Qt::Key_C: m_key = 11; break;
     case Qt::Key_V: m_key = 15; break;
     default: break;
     }

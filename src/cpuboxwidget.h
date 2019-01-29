@@ -5,11 +5,14 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
+#include <QFormLayout>
 #include <QSpacerItem>
 #include <QLabel>
 #include <QTextEdit>
+#include <QPlainTextEdit>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QFontMetrics>
 #include "mydefs.h"
 
 
