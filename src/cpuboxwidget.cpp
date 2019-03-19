@@ -173,7 +173,7 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
     QLabel *rTitleLabel = new QLabel(tr("Other registers"));
     rTitleLabel->setAlignment( Qt::AlignCenter );
 
-    QGridLayout *indexAndTimersGrid = new QGridLayout();
+    QFormLayout *indexAndTimersGrid = new QFormLayout();
     {
         QLabel *indexLabel = new QLabel( tr("I Register:"));
         indexLabel->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
@@ -192,17 +192,19 @@ CPUBoxWidget::CPUBoxWidget(QWidget *parent)
         QLabel *stackLabel = new QLabel( tr("Call Stack"));
         stackLabel->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
 
-        callStack = new QListWidget();
-        callStack->addItem( tr("0x0000") );
+         callStack = new QListWidget();
+        QFontMetrics *fontMetrix = new QFontMetrics( callStack->font() );
+        callStack->setFixedWidth( fontMetrix->width(QString("0x0000")) * 2 );
 
-        callStack->setMinimumWidth( callStack->sizeHintForColumn( 0 ) );
-
-        indexAndTimersGrid->addWidget(indexLabel,      0, 0 );
-        indexAndTimersGrid->addWidget(ILED,            0, 1 );
-        indexAndTimersGrid->addWidget(pcLabel,         1, 0 );
-        indexAndTimersGrid->addWidget(PCLED,           1, 1 );
-        indexAndTimersGrid->addWidget(stackLabel,      2, 0 );
-        indexAndTimersGrid->addWidget(callStack,       2, 1 );
+        indexAndTimersGrid->addRow(indexLabel, ILED);
+        indexAndTimersGrid->addRow(pcLabel, PCLED);
+        indexAndTimersGrid->addRow(stackLabel, callStack);
+        //        indexAndTimersGrid->addWidget(indexLabel,      0, 0 );
+        //        indexAndTimersGrid->addWidget(ILED,            0, 1 );
+        //        indexAndTimersGrid->addWidget(pcLabel,         1, 0 );
+        //        indexAndTimersGrid->addWidget(PCLED,           1, 1 );
+        //        indexAndTimersGrid->addWidget(stackLabel,      2, 0 );
+        //        indexAndTimersGrid->addWidget(callStack,       2, 1 );
     }
 
     QVBoxLayout *rightVBoxLayout = new QVBoxLayout();
@@ -296,7 +298,7 @@ void CPUBoxWidget::registerValueChanged(quint8 m_reg, quint8 value)
 }
 
 void CPUBoxWidget::stackPop()
-{
+{    
     callStack->takeItem( 0 );
 }
 

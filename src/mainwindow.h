@@ -19,9 +19,11 @@
 #include <QStyle>
 
 #include "mydefs.h"
-#include "screen.h"
+#include "screenwidget.h"
 #include "chip8emu.h"
 #include "cpuboxwidget.h"
+#include "display.h"
+#include "keyboard.h"
 
 
 class MainWindow : public QMainWindow
@@ -54,26 +56,26 @@ private:
     void createConnection();
 
     quint8 mapKey(int mkey);
+    QPoint calcDeskTopCenter(int width,int height);
 
     bool workMode;
-    QPoint calcDeskTopCenter(int width,int height);
+    const QString rsrcPath = ":res/images/";
 
     QAction* newGameAct;
     QRect desktopRect;
-
     QToolBar *tb;
     QTextEdit* textListing;
 #ifdef DEBUG
-
     QLabel* CTime_label;
 #endif
     QMenu* viewMenu;
 
     Chip8Emu *m_emul;
-    Screen* m_screen;
+    ScreenWidget *m_screen;
     CPUBoxWidget *m_debugCPU;
-    const QString rsrcPath = ":res/images/";
 
+    Display *m_display;
+    Keyboard *m_keyboard;
 };
 
 #endif // MAINWINDOW_H
