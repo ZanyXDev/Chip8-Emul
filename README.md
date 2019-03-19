@@ -2,11 +2,11 @@
 
 emuChip is cross-platform CHIP-8 and Super CHIP emulator.
 
-Source code: https://github.com/zanyxdev/chip8-qt5
+Source code: https://github.com/zanyxdev/chip8-emul
 
 ### Compilation
 
-[![Build Status](https://travis-ci.org/zanyxdev/chip8-qt5.svg?branch=master)](https://travis-ci.org/zanyxdev/chip8-qt5)
+[![Build Status](https://travis-ci.org/zanyxdev/chip8-qt5.svg?branch=master)](https://travis-ci.org/zanyxdev/chip8-emul)
 
 
 ### Key mappings
